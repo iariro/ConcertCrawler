@@ -77,17 +77,25 @@ def scrape1Orchestra(lines, master):
         date32 = re.search('([0-9]{4})/([0-9]*)/([0-9]*)', line)
         date4 = re.search('([0-9]{4})\.([0-9]*)\.([0-9]*)', line)
         date5 = re.search('([0-9]{4})-([0-9]*)-([0-9]*)', line)
-        title1 = re.search('(第.*回 *演奏会)', line)
-        title2 = re.search('(第.*回 *公演)', line)
-        title3 = re.search('(第.*回定期公演)', line)
-        title4 = re.search('(第.*回定期演奏会)', line)
-        title5 = re.search('(第.*回特別演奏会)', line)
-        title6 = re.search('(第.*回.*コンサート)', line)
-        title7 = re.search('(.*特別演奏会)', line)
-        title8 = re.search('(.*[^ ]* Concert)', line)
+
+        kaijou1 = re.search('([0-9０-９]*[:：][0-9０-９]*)開場', line)
+        kaijou2 = re.search('開場　*([0-9０-９]*[:：][0-9０-９]*)', line)
+        kaien1 = re.search('([0-9０-９]*[:：][0-9０-９]*)開演', line)
+        kaien2 = re.search('開演　*([0-9０-９]*[:：][0-9０-９]*)', line)
+
+        titles = []
+        titles.append(re.search('(第.*回 *演奏会)', line))
+        titles.append(re.search('(第.*回 *公演)', line))
+        titles.append(re.search('(第.*回定期公演)', line))
+        titles.append(re.search('(第.*回定期演奏会)', line))
+        titles.append(re.search('(第.*回特別演奏会)', line))
+        titles.append(re.search('(第.*回.*コンサート)', line))
+        titles.append(re.search('(.*特別演奏会)', line))
+        titles.append(re.search('(.*[^ ]* Concert)', line))
+
         if date11:
             info['date'] = "%s/%s/%s" % (date11.group(1), date11.group(2), date11.group(3))
-        if date12:
+        elif date12:
             year = zenkakuToHankaku(date12.group(1))
             month = zenkakuToHankaku(date12.group(2))
             day = zenkakuToHankaku(date12.group(3))
@@ -108,28 +116,29 @@ def scrape1Orchestra(lines, master):
             info['date'] = "%s/%s/%s" % (date4.group(1), date4.group(2), date4.group(3))
         elif date5:
             info['date'] = "%s/%s/%s" % (date5.group(1), date5.group(2), date5.group(3))
-        elif title1:
-            info['title'] = title1.group(1)
-        elif title2:
-            info['title'] = title2.group(1)
-        elif title3:
-            info['title'] = title3.group(1)
-        elif title4:
-            info['title'] = title4.group(1)
-        elif title5:
-            info['title'] = title5.group(1)
-        elif title6:
-            info['title'] = title6.group(1)
-        elif title7:
-            info['title'] = title7.group(1)
-        elif title8:
-            info['title'] = title8.group(1)
+
+        if kaijou1:
+            info['kaijou'] = zenkakuToHankaku(kaijou1.group(1))
+        elif kaijou2:
+            info['kaijou'] = zenkakuToHankaku(kaijou2.group(1))
+
+        if kaien1:
+            info['kaien'] = zenkakuToHankaku(kaien1.group(1))
+        elif kaien2:
+            info['kaien'] = zenkakuToHankaku(kaien2.group(1))
+
+        for title in titles:
+            if title:
+                info['title'] = title.group(1)
+                break
     return info
 
 def scrapeAllFromFile(master):
     totalCount = 0
     dateCount = 0
     titleCount = 0
+    kaijouCount = 0
+    kaienCount = 0
     with open('concertinfo.txt') as file:
         lines = []
         lineFlag = False
@@ -148,6 +157,10 @@ def scrapeAllFromFile(master):
                         totalCount += 1
                         if 'date' in info:
                             dateCount += 1
+                        if 'kaijou' in info:
+                            kaijouCount += 1
+                        if 'kaien' in info:
+                            kaienCount += 1
                         if 'title' in info:
                             titleCount +=1
                         print("%s %s" % (orchestra, info))
@@ -155,7 +168,7 @@ def scrapeAllFromFile(master):
                 else:
                     lines.append(line)
 
-    print("total : %d date : %d title %d" % (totalCount, dateCount, titleCount))
+    print("total:%d date:%d kaijou:%d kaien:%d title:%d" % (totalCount, dateCount, kaijouCount, kaienCount, titleCount))
 
 def getTextAllAndOutputFile():
     urls = getPastOrchestra()
@@ -178,6 +191,3 @@ def loadConcertSchema():
         for element in tree.findall('xsd:simpleType[@name="%s"]/xsd:restriction/xsd:enumeration' % item, {'xsd': 'http://www.w3.org/2001/XMLSchema'}):
             master[item].append(element.attrib['value'])
     return master
-
-#master = loadConcertSchema()
-#scrapeAllFromFile(master)
