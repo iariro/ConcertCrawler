@@ -48,16 +48,16 @@ def getTextFromOrchestraSite(url, file):
 
 def zenkakuToHankaku(zenkaku):
     digitMap = {}
-    digitMap['ï¼'] = '0'
-    digitMap['ï¼‘'] = '1'
-    digitMap['ï¼’'] = '2'
-    digitMap['ï¼“'] = '3'
-    digitMap['ï¼”'] = '4'
-    digitMap['ï¼•'] = '5'
-    digitMap['ï¼–'] = '6'
-    digitMap['ï¼—'] = '7'
-    digitMap['ï¼˜'] = '8'
-    digitMap['ï¼™'] = '9'
+    digitMap['‚O'] = '0'
+    digitMap['‚P'] = '1'
+    digitMap['‚Q'] = '2'
+    digitMap['‚R'] = '3'
+    digitMap['‚S'] = '4'
+    digitMap['‚T'] = '5'
+    digitMap['‚U'] = '6'
+    digitMap['‚V'] = '7'
+    digitMap['‚W'] = '8'
+    digitMap['‚X'] = '9'
 
     hankaku = ""
     for c in zenkaku:
@@ -70,27 +70,27 @@ def zenkakuToHankaku(zenkaku):
 def scrape1Orchestra(lines, master):
     info = {}
     for line in lines:
-        date11 = re.search('ï¼ˆ*([0-9]*) *å¹´ï¼‰* *([0-9]*) *æœˆ *([0-9]*) *æ—¥', line)
-        date12 = re.search('ï¼ˆ*([ï¼-ï¼™]*) *å¹´ï¼‰* *([ï¼-ï¼™]*) *æœˆ *([ï¼-ï¼™]*) *æ—¥', line)
-        date2 = re.search('å¹³æˆ([ï¼-ï¼™]*)å¹´([ï¼-ï¼™]*)æœˆ([ï¼-ï¼™]*)æ—¥', line)
+        date11 = re.search('i*([0-9]*) *”Nj* *([0-9]*) *Œ *([0-9]*) *“ú', line)
+        date12 = re.search('i*([‚O-‚X]*) *”Nj* *([‚O-‚X]*) *Œ *([‚O-‚X]*) *“ú', line)
+        date2 = re.search('•½¬([‚O-‚X]*)”N([‚O-‚X]*)Œ([‚O-‚X]*)“ú', line)
         date31 = re.search('([0-9]{2})/([0-9]*)/([0-9]*)', line)
         date32 = re.search('([0-9]{4})/([0-9]*)/([0-9]*)', line)
         date4 = re.search('([0-9]{4})\.([0-9]*)\.([0-9]*)', line)
         date5 = re.search('([0-9]{4})-([0-9]*)-([0-9]*)', line)
 
-        kaijou1 = re.search('([0-9ï¼-ï¼™]*[:ï¼š][0-9ï¼-ï¼™]*)é–‹å ´', line)
-        kaijou2 = re.search('é–‹å ´ã€€*([0-9ï¼-ï¼™]*[:ï¼š][0-9ï¼-ï¼™]*)', line)
-        kaien1 = re.search('([0-9ï¼-ï¼™]*[:ï¼š][0-9ï¼-ï¼™]*)é–‹æ¼”', line)
-        kaien2 = re.search('é–‹æ¼”ã€€*([0-9ï¼-ï¼™]*[:ï¼š][0-9ï¼-ï¼™]*)', line)
+        kaijou1 = re.search('([0-9‚O-‚X]*[:F][0-9‚O-‚X]*)ŠJê', line)
+        kaijou2 = re.search('ŠJê@*([0-9‚O-‚X]*[:F][0-9‚O-‚X]*)', line)
+        kaien1 = re.search('([0-9‚O-‚X]*[:F][0-9‚O-‚X]*)ŠJ‰‰', line)
+        kaien2 = re.search('ŠJ‰‰@*([0-9‚O-‚X]*[:F][0-9‚O-‚X]*)', line)
 
         titles = []
-        titles.append(re.search('(ç¬¬.*å› *æ¼”å¥ä¼š)', line))
-        titles.append(re.search('(ç¬¬.*å› *å…¬æ¼”)', line))
-        titles.append(re.search('(ç¬¬.*å›å®šæœŸå…¬æ¼”)', line))
-        titles.append(re.search('(ç¬¬.*å›å®šæœŸæ¼”å¥ä¼š)', line))
-        titles.append(re.search('(ç¬¬.*å›ç‰¹åˆ¥æ¼”å¥ä¼š)', line))
-        titles.append(re.search('(ç¬¬.*å›.*ã‚³ãƒ³ã‚µãƒ¼ãƒˆ)', line))
-        titles.append(re.search('(.*ç‰¹åˆ¥æ¼”å¥ä¼š)', line))
+        titles.append(re.search('(‘æ.*‰ñ *‰‰‘t‰ï)', line))
+        titles.append(re.search('(‘æ.*‰ñ *Œö‰‰)', line))
+        titles.append(re.search('(‘æ.*‰ñ’èŠúŒö‰‰)', line))
+        titles.append(re.search('(‘æ.*‰ñ’èŠú‰‰‘t‰ï)', line))
+        titles.append(re.search('(‘æ.*‰ñ“Á•Ê‰‰‘t‰ï)', line))
+        titles.append(re.search('(‘æ.*‰ñ.*ƒRƒ“ƒT[ƒg)', line))
+        titles.append(re.search('(.*“Á•Ê‰‰‘t‰ï)', line))
         titles.append(re.search('(.*[^ ]* Concert)', line))
 
         if date11:
@@ -139,7 +139,7 @@ def scrapeAllFromFile(master):
     titleCount = 0
     kaijouCount = 0
     kaienCount = 0
-    with open('concertinfo.txt') as file:
+    with open('testdata\\concertinfo.txt') as file:
         lines = []
         lineFlag = False
         orchestra = None
@@ -172,7 +172,7 @@ def scrapeAllFromFile(master):
 
 def getTextAllAndOutputFile():
     urls = getPastOrchestra()
-    with open('concertinfo.txt', 'w') as file:
+    with open('testdata\\concertinfo.txt', 'w') as file:
         for url in urls:
             print(url)
             lines = getTextFromOrchestraSite(url, file)
@@ -185,7 +185,7 @@ def getTextAllAndOutputFile():
 
 def loadConcertSchema():
     master = {}
-    tree = ET.ElementTree(file='ConcertSchema.xsd')
+    tree = ET.ElementTree(file='testdata\\ConcertSchema.xsd')
     for item in ('hallName', 'playerName', 'partName', 'composerName'):
         master[item] = []
         for element in tree.findall('xsd:simpleType[@name="%s"]/xsd:restriction/xsd:enumeration' % item, {'xsd': 'http://www.w3.org/2001/XMLSchema'}):
