@@ -179,5 +179,5 @@ def loadConcertSchema():
             master[item].append(element.attrib['value'])
     return master
 
-master = loadConcertSchema()
-scrapeAllFromFile(master)
+#master = loadConcertSchema()
+#scrapeAllFromFile(master)
