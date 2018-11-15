@@ -78,10 +78,14 @@ def scrape1Orchestra(lines, master):
         date4 = re.search('([0-9]{4})\.([0-9]*)\.([0-9]*)', line)
         date5 = re.search('([0-9]{4})-([0-9]*)-([0-9]*)', line)
 
-        kaijou1 = re.search('([0-9０-９]*[:：][0-9０-９]*)開場', line)
+        kaijou1 = re.search('([0-9０-９]*[:：][0-9０-９]*)[ 　]*開場', line)
         kaijou2 = re.search('開場　*([0-9０-９]*[:：][0-9０-９]*)', line)
-        kaien1 = re.search('([0-9０-９]*[:：][0-9０-９]*)開演', line)
+        kaijou3 = re.search('([0-9０-９]*)時開場', line)
+        kaijou4 = re.search('([0-9０-９]*)時([0-9０-９]*)分開場', line)
+        kaien1 = re.search('([0-9０-９]*[:：][0-9０-９]*)[ 　]*開演', line)
         kaien2 = re.search('開演　*([0-9０-９]*[:：][0-9０-９]*)', line)
+        kaien3 = re.search('([0-9０-９]*)時開演', line)
+        kaien4 = re.search('([0-9０-９]*)時([0-9０-９]*)分開演', line)
 
         titles = []
         titles.append(re.search('(第.*回 *演奏会)', line))
@@ -121,11 +125,19 @@ def scrape1Orchestra(lines, master):
             info['kaijou'] = zenkakuToHankaku(kaijou1.group(1))
         elif kaijou2:
             info['kaijou'] = zenkakuToHankaku(kaijou2.group(1))
+        elif kaijou3:
+            info['kaijou'] = zenkakuToHankaku(kaijou3.group(1)) + ":00"
+        elif kaijou4:
+            info['kaijou'] = zenkakuToHankaku(kaijou4.group(1) + ":" + kaijou4.group(2))
 
         if kaien1:
             info['kaien'] = zenkakuToHankaku(kaien1.group(1))
         elif kaien2:
             info['kaien'] = zenkakuToHankaku(kaien2.group(1))
+        elif kaien3:
+            info['kaien'] = zenkakuToHankaku(kaien3.group(1)) + ":00"
+        elif kaien4:
+            info['kaien'] = zenkakuToHankaku(kaien4.group(1) + ":" + kaien4.group(2))
 
         for title in titles:
             if title:
