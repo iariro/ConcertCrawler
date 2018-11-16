@@ -67,83 +67,113 @@ def zenkakuToHankaku(zenkaku):
             hankaku += c
     return hankaku
 
-def scrape1Orchestra(lines, master):
-    info = {}
-    for line in lines:
-        date11 = re.search('（*([0-9]*) *年）* *([0-9]*) *月 *([0-9]*) *日', line)
-        date12 = re.search('（*([０-９]*) *年）* *([０-９]*) *月 *([０-９]*) *日', line)
-        date2 = re.search('平成([０-９]*)年([０-９]*)月([０-９]*)日', line)
-        date31 = re.search('([0-9]{2})/([0-9]*)/([0-9]*)', line)
-        date32 = re.search('([0-9]{4})/([0-9]*)/([0-9]*)', line)
-        date4 = re.search('([0-9]{4})\.([0-9]*)\.([0-9]*)', line)
-        date5 = re.search('([0-9]{4})-([0-9]*)-([0-9]*)', line)
+class ConcertInformation:
+    def __init__(self):
+        self.info = {}
 
-        kaijou1 = re.search('([0-9０-９]*[:：][0-9０-９]*)[ 　]*開場', line)
-        kaijou2 = re.search('開場　*([0-9０-９]*[:：][0-9０-９]*)', line)
+    def set(self, key, value):
+        if key not in self.info:
+            self.info[key] = value
+
+    def get(self, key):
+        return self.info[key]
+
+def scrape1Orchestra(lines, master):
+    info = ConcertInformation()
+    for line in lines:
+        date11 = re.search('（*([0-9]{4}) *年）* *([0-9]*) *月 *([0-9]*) *日', line)
+        date12 = re.search('（*([０-９]{4}) *年）* *([０-９]*) *月 *([０-９]*) *日', line)
+        date2 = re.search('平成([０-９]*)年([０-９]*)月([０-９]*)日', line)
+        date31 = re.search('([0-9]{2})/([0-9]*)/([0-9]{1-2})', line)
+        date32 = re.search('([0-9]{4})/([0-9]{1-2})/([0-9]{1-2})', line)
+        date4 = re.search('([0-9]{4})\.([0-9]{1-2})\.([0-9]{1-2})', line)
+        date5 = re.search('([0-9]{4})-([0-9]{1-2})-([0-9]{1-2})', line)
+
+        kaijou0 = re.search('午後([0-9０-９]*)時([0-9０-９]*)分開場', line)
+        kaijou1 = re.search('([0-9０-９]{2}[:：][0-9０-９]{2})[ 　]*開場', line)
+        kaijou21 = re.search('開場：*　*([0-9０-９]*[:：][0-9０-９]*)', line)
+        kaijou22 = re.search('開場 PM *([0-9０-９]*)[:：]([0-9０-９]*)', line)
         kaijou3 = re.search('([0-9０-９]*)時開場', line)
-        kaijou4 = re.search('([0-9０-９]*)時([0-9０-９]*)分開場', line)
-        kaien1 = re.search('([0-9０-９]*[:：][0-9０-９]*)[ 　]*開演', line)
-        kaien2 = re.search('開演　*([0-9０-９]*[:：][0-9０-９]*)', line)
+        kaijou4 = re.search('([0-9０-９]*)時([0-9０-９]*)分 *開場', line)
+
+        kaien0 = re.search('午後([0-9０-９]*)時開演', line)
+        kaien1 = re.search('([0-9０-９]{2}[:：][0-9０-９]{2})[ 　]*開演', line)
+        kaien21 = re.search('開演：*　*([0-9０-９]*[:：][0-9０-９]*)', line)
+        kaien22 = re.search('開演 PM *([0-9０-９]*)[:：]([0-9０-９]*)', line)
         kaien3 = re.search('([0-9０-９]*)時開演', line)
-        kaien4 = re.search('([0-9０-９]*)時([0-9０-９]*)分開演', line)
+        kaien4 = re.search('([0-9０-９]*)時([0-9０-９]*)分 *開演', line)
 
         titles = []
-        titles.append(re.search('(第.*回 *演奏会)', line))
+        titles.append(re.search('.*(第.*回 *演奏会).*', line))
         titles.append(re.search('(第.*回 *公演)', line))
         titles.append(re.search('(第.*回定期公演)', line))
-        titles.append(re.search('(第.*回定期演奏会)', line))
+        titles.append(re.search('(第[0-9０-９]*回定期演奏会).*', line))
         titles.append(re.search('(第.*回特別演奏会)', line))
         titles.append(re.search('(第.*回.*コンサート)', line))
         titles.append(re.search('(.*特別演奏会)', line))
         titles.append(re.search('(.*[^ ]* Concert)', line))
 
         if date11:
-            info['date'] = "%s/%s/%s" % (date11.group(1), date11.group(2), date11.group(3))
+            info.set('date', "%s/%s/%s" % (date11.group(1), date11.group(2), date11.group(3)))
         elif date12:
             year = zenkakuToHankaku(date12.group(1))
             month = zenkakuToHankaku(date12.group(2))
             day = zenkakuToHankaku(date12.group(3))
-            info['date'] = "%s/%s/%s" % (year, month, day)
+            info.set('date', "%s/%s/%s" % (year, month, day))
         elif date2:
             year = int(zenkakuToHankaku(date2.group(1))) + 1988
             month = int(zenkakuToHankaku(date2.group(2)))
             day = int(zenkakuToHankaku(date2.group(3)))
-            info['date'] = "%s/%s/%s" % (year, month, day)
+            info.set('date', "%s/%s/%s" % (year, month, day))
         elif date31:
             year = int(zenkakuToHankaku(date31.group(1))) + 2000
             month = int(zenkakuToHankaku(date31.group(2)))
             day = int(zenkakuToHankaku(date31.group(3)))
-            info['date'] = "%s/%s/%s" % (year, month, day)
+            info.set('date', "%s/%s/%s" % (year, month, day))
         elif date32:
-            info['date'] = "%s/%s/%s" % (date32.group(1), date32.group(2), date32.group(3))
+            info.set('date', "%s/%s/%s" % (date32.group(1), date32.group(2), date32.group(3)))
         elif date4:
-            info['date'] = "%s/%s/%s" % (date4.group(1), date4.group(2), date4.group(3))
+            info.set('date', "%s/%s/%s" % (date4.group(1), date4.group(2), date4.group(3)))
         elif date5:
-            info['date'] = "%s/%s/%s" % (date5.group(1), date5.group(2), date5.group(3))
+            info.set('date', "%s/%s/%s" % (date5.group(1), date5.group(2), date5.group(3)))
 
-        if kaijou1:
-            info['kaijou'] = zenkakuToHankaku(kaijou1.group(1))
-        elif kaijou2:
-            info['kaijou'] = zenkakuToHankaku(kaijou2.group(1))
+        if kaijou0:
+            hour = int(zenkakuToHankaku(kaijou0.group(1))) + 12
+            minute = zenkakuToHankaku(kaijou0.group(2))
+            info.set('kaijou', "%2d:%s" % (hour, minute))
+        elif kaijou1:
+            info.set('kaijou', zenkakuToHankaku(kaijou1.group(1)))
+        elif kaijou21:
+            info.set('kaijou', zenkakuToHankaku(kaijou21.group(1)))
+        elif kaijou22:
+            hour = int(zenkakuToHankaku(kaijou22.group(1))) + 12
+            minute = zenkakuToHankaku(kaijou22.group(2))
+            info.set('kaijou', "%2d:%s" % (hour, minute))
         elif kaijou3:
-            info['kaijou'] = zenkakuToHankaku(kaijou3.group(1)) + ":00"
+            info.set('kaijou', zenkakuToHankaku(kaijou3.group(1)) + ":00")
         elif kaijou4:
-            info['kaijou'] = zenkakuToHankaku(kaijou4.group(1) + ":" + kaijou4.group(2))
+            info.set('kaijou', zenkakuToHankaku(kaijou4.group(1) + ":" + kaijou4.group(2)))
 
-        if kaien1:
-            info['kaien'] = zenkakuToHankaku(kaien1.group(1))
-        elif kaien2:
-            info['kaien'] = zenkakuToHankaku(kaien2.group(1))
+        if kaien0:
+            info.set('kaien', "%02d:00" % (int(zenkakuToHankaku(kaien0.group(1))) + 12))
+        elif kaien21:
+            info.set('kaien', zenkakuToHankaku(kaien21.group(1)))
+        elif kaien22:
+            hour = int(zenkakuToHankaku(kaien22.group(1))) + 12
+            minute = zenkakuToHankaku(kaien22.group(2))
+            info.set('kaien', "%2d:%s" % (hour, minute))
+        elif kaien1:
+            info.set('kaien', zenkakuToHankaku(kaien1.group(1)))
         elif kaien3:
-            info['kaien'] = zenkakuToHankaku(kaien3.group(1)) + ":00"
+            info.set('kaien', zenkakuToHankaku(kaien3.group(1)) + ":00")
         elif kaien4:
-            info['kaien'] = zenkakuToHankaku(kaien4.group(1) + ":" + kaien4.group(2))
+            info.set('kaien', zenkakuToHankaku(kaien4.group(1) + ":" + kaien4.group(2)))
 
         for title in titles:
             if title:
-                info['title'] = title.group(1)
+                info.set('title', title.group(1))
                 break
-    return info
+    return info.info
 
 def scrapeAllFromFile(master):
     totalCount = 0
