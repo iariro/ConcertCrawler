@@ -1,4 +1,4 @@
 import concertcrawler
 
-master = concertcrawler.loadConcertSchema()
-concertcrawler.scrapeAllFromFile(master)
+master = concertcrawler.loadConcertSchema('testdata/ConcertSchema.xsd')
+concertcrawler.scrapeAllFromFile(master, 'testdata/concertinfo.txt')

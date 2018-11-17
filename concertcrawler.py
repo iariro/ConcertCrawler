@@ -173,15 +173,31 @@ def scrape1Orchestra(lines, master):
             if title:
                 info.set('title', title.group(1))
                 break
+
+        for hall in master['hallName']:
+            if hall in line:
+                info.set('hall', hall)
+            else:
+                hallkeywords = hall.split()
+                if len([hallkeyword for hallkeyword in hallkeywords if hallkeyword in line]) == len(hallkeywords):
+                    info.set('hall', hall)
+
+        ryoukin1 = re.search('(全席指定.*円)', line)
+
+        if '入場無料' in line:
+            info.set('ryoukin', '入場無料')
+        elif ryoukin1:
+            info.set('ryoukin', ryoukin1.group(1))
+
     return info.info
 
-def scrapeAllFromFile(master):
+def scrapeAllFromFile(master, concertinfofilepath):
     totalCount = 0
     dateCount = 0
     titleCount = 0
     kaijouCount = 0
     kaienCount = 0
-    with open('testdata\\concertinfo.txt') as file:
+    with open(concertinfofilepath) as file:
         lines = []
         lineFlag = False
         orchestra = None
@@ -225,9 +241,9 @@ def getTextAllAndOutputFile():
                 except UnicodeEncodeError:
                     file.write('UnicodeEncodeError\n')
 
-def loadConcertSchema():
+def loadConcertSchema(filepath):
     master = {}
-    tree = ET.ElementTree(file='testdata\\ConcertSchema.xsd')
+    tree = ET.ElementTree(file=filepath)
     for item in ('hallName', 'playerName', 'partName', 'composerName'):
         master[item] = []
         for element in tree.findall('xsd:simpleType[@name="%s"]/xsd:restriction/xsd:enumeration' % item, {'xsd': 'http://www.w3.org/2001/XMLSchema'}):
