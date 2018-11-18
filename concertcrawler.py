@@ -5,7 +5,21 @@ import urllib
 import urllib.parse
 import urllib.request as urllib2
 import xml.etree.ElementTree as ET
-#from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup
+
+def getPastOrchestra2():
+    urls = []
+    
+    url = 'http://www2.gol.com/users/ip0601170243/private/web/concert/pastorchestra.htm'
+    ua = 'concertcrawler'
+
+    req = urllib.request.Request(url, headers={'User-Agent':ua})
+    html = urllib.request.urlopen(req)
+    soup = BeautifulSoup(html, "html.parser")
+
+    for tr in soup.find_all('tr'):
+        for td in tr.children:
+            print(td)
 
 def getPastOrchestra():
     urls = []
