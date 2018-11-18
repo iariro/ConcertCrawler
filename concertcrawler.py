@@ -197,7 +197,7 @@ def scrapeAllFromFile(master, concertinfofilepath):
     titleCount = 0
     kaijouCount = 0
     kaienCount = 0
-    with open(concertinfofilepath) as file:
+    with open(concertinfofilepath, encoding='utf-8') as file:
         lines = []
         lineFlag = False
         orchestra = None
