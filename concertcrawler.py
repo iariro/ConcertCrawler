@@ -70,6 +70,8 @@ def zenkakuToHankaku(zenkaku):
 class ConcertInformation:
     def __init__(self):
         self.info = {}
+        self.info['kyoku'] = []
+        self.info['player'] = {}
 
     def set(self, key, value):
         if key not in self.info:
@@ -88,30 +90,6 @@ def scrape1Orchestra(lines, master):
         date32 = re.search('([0-9]{4})/([0-9]{1-2})/([0-9]{1-2})', line)
         date4 = re.search('([0-9]{4})\.([0-9]{1-2})\.([0-9]{1-2})', line)
         date5 = re.search('([0-9]{4})-([0-9]{1-2})-([0-9]{1-2})', line)
-
-        kaijou0 = re.search('午後([0-9０-９]*)時([0-9０-９]*)分開場', line)
-        kaijou1 = re.search('([0-9０-９]{2}[:：][0-9０-９]{2})[ 　]*開場', line)
-        kaijou21 = re.search('開場：*　*([0-9０-９]*[:：][0-9０-９]*)', line)
-        kaijou22 = re.search('開場 PM *([0-9０-９]*)[:：]([0-9０-９]*)', line)
-        kaijou3 = re.search('([0-9０-９]*)時開場', line)
-        kaijou4 = re.search('([0-9０-９]*)時([0-9０-９]*)分 *開場', line)
-
-        kaien0 = re.search('午後([0-9０-９]*)時開演', line)
-        kaien1 = re.search('([0-9０-９]{2}[:：][0-9０-９]{2})[ 　]*開演', line)
-        kaien21 = re.search('開演：*　*([0-9０-９]*[:：][0-9０-９]*)', line)
-        kaien22 = re.search('開演 PM *([0-9０-９]*)[:：]([0-9０-９]*)', line)
-        kaien3 = re.search('([0-9０-９]*)時開演', line)
-        kaien4 = re.search('([0-9０-９]*)時([0-9０-９]*)分 *開演', line)
-
-        titles = []
-        titles.append(re.search('.*(第.*回 *演奏会).*', line))
-        titles.append(re.search('(第.*回 *公演)', line))
-        titles.append(re.search('(第.*回定期公演)', line))
-        titles.append(re.search('(第[0-9０-９]*回定期演奏会).*', line))
-        titles.append(re.search('(第.*回特別演奏会)', line))
-        titles.append(re.search('(第.*回.*コンサート)', line))
-        titles.append(re.search('(.*特別演奏会)', line))
-        titles.append(re.search('(.*[^ ]* Concert)', line))
 
         if date11:
             info.set('date', "%s/%s/%s" % (date11.group(1), date11.group(2), date11.group(3)))
@@ -136,6 +114,20 @@ def scrape1Orchestra(lines, master):
             info.set('date', "%s/%s/%s" % (date4.group(1), date4.group(2), date4.group(3)))
         elif date5:
             info.set('date', "%s/%s/%s" % (date5.group(1), date5.group(2), date5.group(3)))
+
+        kaijou0 = re.search('午後([0-9０-９]*)時([0-9０-９]*)分開場', line)
+        kaijou1 = re.search('([0-9０-９]{2}[:：][0-9０-９]{2})[ 　]*開場', line)
+        kaijou21 = re.search('開場：*　*([0-9０-９]*[:：][0-9０-９]*)', line)
+        kaijou22 = re.search('開場 PM *([0-9０-９]*)[:：]([0-9０-９]*)', line)
+        kaijou3 = re.search('([0-9０-９]*)時開場', line)
+        kaijou4 = re.search('([0-9０-９]*)時([0-9０-９]*)分 *開場', line)
+
+        kaien0 = re.search('午後([0-9０-９]*)時開演', line)
+        kaien1 = re.search('([0-9０-９]{2}[:：][0-9０-９]{2})[ 　]*開演', line)
+        kaien21 = re.search('開演：*　*([0-9０-９]*[:：][0-9０-９]*)', line)
+        kaien22 = re.search('開演 PM *([0-9０-９]*)[:：]([0-9０-９]*)', line)
+        kaien3 = re.search('([0-9０-９]*)時開演', line)
+        kaien4 = re.search('([0-9０-９]*)時([0-9０-９]*)分 *開演', line)
 
         if kaijou0:
             hour = int(zenkakuToHankaku(kaijou0.group(1))) + 12
@@ -169,6 +161,16 @@ def scrape1Orchestra(lines, master):
         elif kaien4:
             info.set('kaien', zenkakuToHankaku(kaien4.group(1) + ":" + kaien4.group(2)))
 
+        titles = []
+        titles.append(re.search('.*(第.*回 *演奏会).*', line))
+        titles.append(re.search('(第.*回 *公演)', line))
+        titles.append(re.search('(第.*回定期公演)', line))
+        titles.append(re.search('(第[0-9０-９]*回定期演奏会).*', line))
+        titles.append(re.search('(第.*回特別演奏会)', line))
+        titles.append(re.search('(第.*回.*コンサート)', line))
+        titles.append(re.search('(.*特別演奏会)', line))
+        titles.append(re.search('(.*[^ ]* Concert)', line))
+
         for title in titles:
             if title:
                 info.set('title', title.group(1))
@@ -183,11 +185,39 @@ def scrape1Orchestra(lines, master):
                     info.set('hall', hall)
 
         ryoukin1 = re.search('(全席指定.*円)', line)
+        ryoukin2 = re.search('入場料：(.*円)', line)
 
         if '入場無料' in line:
             info.set('ryoukin', '入場無料')
         elif ryoukin1:
             info.set('ryoukin', ryoukin1.group(1))
+        elif ryoukin2:
+            info.set('ryoukin', ryoukin2.group(1))
+
+        for composer in master['composerName']:
+            if composer in line:
+                kyokumoku1 = re.search(composer + "[  ]*[:：/／][  ]*(.*)", line)
+                kyokumoku2 = re.search("(.*)[  ]*[:：/／][  ]" + composer, line)
+
+                if kyokumoku1:
+                    title = kyokumoku1.group(1)
+                    if len(title) > 50:
+                        title2 = []
+                        for titleparts in title.split():
+                            if len(" ".join(title2)) > 50:
+                                break
+                            title2.append(titleparts)
+                        title = " ".join(title2)
+                    info.info['kyoku'].append({'composer': composer, 'title': title})
+                    break
+                elif kyokumoku2:
+                    title = kyokumoku2.group(1)
+                    info.info['kyoku'].append({'composer': composer, 'title': title})
+                    break
+
+        conductor = re.search("指揮[  :：](.*)", line)
+        if conductor:
+            info.info['player']['指揮'] = conductor.group(1)
 
     return info.info
 
