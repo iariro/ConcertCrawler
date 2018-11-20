@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 
 import re
 import urllib
@@ -6,20 +6,6 @@ import urllib.parse
 import urllib.request as urllib2
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
-
-def getPastOrchestra2():
-    urls = []
-    
-    url = 'http://www2.gol.com/users/ip0601170243/private/web/concert/pastorchestra.htm'
-    ua = 'concertcrawler'
-
-    req = urllib.request.Request(url, headers={'User-Agent':ua})
-    html = urllib.request.urlopen(req)
-    soup = BeautifulSoup(html, "html.parser")
-
-    for tr in soup.find_all('tr'):
-        for td in tr.children:
-            print(td)
 
 def getPastOrchestra():
     urls = []
@@ -31,8 +17,15 @@ def getPastOrchestra():
     html = urllib.request.urlopen(req)
     soup = BeautifulSoup(html, "html.parser")
 
-    for url in soup.find_all('a'):
-        urls.append({'title':url.get_text().strip(), 'url':url.get('href')})
+    urls = []
+    for tr in soup.find_all('tr'):
+        tds = tr.find_all('td')
+        if tds[0].a == None:
+            continue
+        urls.append({
+            'title':tds[0].a.string.strip(),
+            'url':tds[0].a.get('href'),
+            'lastdate':tds[1].string.split()[0]})
     return urls
 
 def getTextFromOrchestraSite(url, file):

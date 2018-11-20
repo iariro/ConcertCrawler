@@ -1,3 +1,7 @@
+#!/usr/local/bin/python3
+
 import concertcrawler
 
-concertcrawler.getPastOrchestra2()
+urls = concertcrawler.getPastOrchestra()
+for url in urls:
+	print(url)
