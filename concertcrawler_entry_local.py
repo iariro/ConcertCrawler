@@ -4,5 +4,4 @@ import concertcrawler
 
 master = concertcrawler.loadConcertSchema('testdata/ConcertSchema.xsd')
 urls = concertcrawler.getPastOrchestra()
-with open('concertinfo.txt', 'w') as file:
-	concertcrawler.getTextAllAndOutputFile(master, urls, file)
+concertcrawler.scrapeAllFromFile(master, 'testdata/concertinfo.txt')
