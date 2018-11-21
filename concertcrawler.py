@@ -1,6 +1,7 @@
 #!/usr/local/bin/python3
 
 import re
+from datetime import datetime, timedelta
 import urllib
 import urllib.parse
 import urllib.request as urllib2
@@ -59,6 +60,7 @@ def zenkakuToHankaku(zenkaku):
 	digitMap['７'] = '7'
 	digitMap['８'] = '8'
 	digitMap['９'] = '9'
+	digitMap['：'] = ':'
 
 	hankaku = ""
 	for c in zenkaku:
@@ -80,6 +82,52 @@ class ConcertInformation:
 
 	def get(self, key):
 		return self.info[key]
+
+	def getName(self):
+		if 'name' in self.info:
+			return self.info['name']
+		else:
+			return ''
+
+	def getDate(self):
+		if 'date' in self.info:
+			return self.info['date']
+		else:
+			return '12:00'
+
+	def getKaijou(self):
+		if 'kaijou' in self.info:
+			return self.info['kaijou']
+		elif 'kaien' in self.info:
+			kaien2 = datetime.strptime(self.info['kaien'], "%H:%M")
+			kaijou = kaien2 - timedelta(minutes=30)
+			return kaijou.strftime('%H:%M')
+		else:
+			return '12:00'
+
+	def getKaien(self):
+		if 'kaien' in self.info:
+			return self.info['kaien']
+		else:
+			return '12:00'
+
+	def getHall(self):
+		if 'hall' in self.info:
+			return self.info['hall']
+		else:
+			return ''
+
+	def getRyoukin(self):
+		if 'ryoukin' in self.info:
+			return self.info['ryoukin']
+		else:
+			return ''
+
+	def getTitle(self):
+		if 'title' in self.info:
+			return self.info['title']
+		else:
+			return ''
 
 def scrape1Orchestra(orchestra, lines, master):
 	info = ConcertInformation()
@@ -232,7 +280,7 @@ def scrape1Orchestra(orchestra, lines, master):
 			info.info['player']['指揮'] = conductor.group(1)
 		info.info['player']['管弦楽団'] = orchestra
 
-	return info.info
+	return info
 
 def scrapeAllFromFile(master, concertinfofilepath):
 	totalCount = 0
@@ -311,31 +359,27 @@ def getTextAllAndOutputFile(master, urls, file):
 		lines = getTextFromOrchestraSite(url, file)
 		if lines:
 			info = scrape1Orchestra(url['title'], lines, master)
-			if 'date' in info:
-				if info['date'] > url['lastdate']:
+			if 'date' in info.info:
+				if info.getDate() > url['lastdate']:
 					file.write('----------------------------------------------' + '\n')
 					file.write(url['title'] + '\n')
-					file.write('%s <- %s\n' % (info['date'], url['lastdate']))
+					file.write('%s <- %s\n' % (info.getDate(), url['lastdate']))
 					file.write(str(info) + '\n')
 
-				attr = {}
-				if 'date' in info:
-					attr['date'] = info['date']
-				if 'kaijou' in info:
-					attr['kaijou'] = info['kaijou']
-				if 'kaien' in info:
-					attr['kaien'] = info['kaien']
-				if 'title' in info:
-					attr['title'] = info['title']
-				if 'ryoukin' in info:
-					attr['ryoukin'] = info['ryoukin']
-				concertElement = SubElement(root, 'concert', attr)
-				kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
-				for kyoku in info['kyoku']:
-					kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
-				playerCollectionElement = SubElement(concertElement , 'playerCollection')
-				for player in info['player']:
-					playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'player': info['player'][player]})
+					attr = {}
+					attr['date'] = info.getDate()
+					attr['kaijou'] = info.getKaijou()
+					attr['kaien'] = info.getKaien()
+					attr['hall'] = info.getHall()
+					attr['name'] = info.getTitle()
+					attr['ryoukin'] = info.getRyoukin()
+					concertElement = SubElement(root, 'concert', attr)
+					kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
+					for kyoku in info.info['kyoku']:
+						kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
+					playerCollectionElement = SubElement(concertElement , 'playerCollection')
+					for player in info.info['player']:
+						playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info.info['player'][player]})
 
 	with open('concertinfo.xml', 'w') as xml:
 		rough_string = tostring(root, 'utf-8')

@@ -7,9 +7,6 @@ class MyTest(unittest.TestCase):
     def setUp(self):
         self.master = concertcrawler.loadConcertSchema(r'../testdata/ConcertSchema.xsd')
 
-    def test_mytest_01(self):
-        self.assertEqual("123", concertcrawler.zenkakuToHankaku('１２３'))
-
     def test_teikyou201512(self):
         lines = [
             "帝京大学交響楽団/TEIKYO University Symphony Orchestra",
