@@ -45,8 +45,8 @@ def getTextFromOrchestraSite(url, file):
 			if len(line) > 0:
 				lines.append(line)
 		return lines
-	except Exception:
-		file.write('Exception\n')
+	except Exception as e:
+		file.write(str(e) + '\n')
 
 def zenkakuToHankaku(zenkaku):
 	digitMap = {}
@@ -351,40 +351,42 @@ def scrapeAllFromFile(master, concertinfofilepath):
 		reparsed = minidom.parseString(rough_string)
 		xml.write(reparsed.toprettyxml(indent="  "))
 
-def getTextAllAndOutputFile(master, urls, file):
+def getTextAllAndOutputFile(master, urls, textfile):
 	root = Element('Concert')
 	tree = ElementTree(element=root)
 	for url in urls:
 		print(url)
-		lines = getTextFromOrchestraSite(url, file)
+		lines = getTextFromOrchestraSite(url, textfile)
 		if lines:
 			info = scrape1Orchestra(url['title'], lines, master)
 			if 'date' in info.info:
-				if info.getDate() > url['lastdate']:
-					file.write('----------------------------------------------' + '\n')
-					file.write(url['title'] + '\n')
-					file.write('%s <- %s\n' % (info.getDate(), url['lastdate']))
-					file.write(str(info) + '\n')
+				try:
+					textfile.write('----------------------------------------------' + '\n')
+					textfile.write(url['title'] + '\n')
+					if info.getDate() > url['lastdate']:
+						textfile.write('%s <- %s\n' % (info.getDate(), url['lastdate']))
+						textfile.write(str(info.info) + '\n')
+						for line in lines:
+							textfile.write(line + '\n')
 
-					attr = {}
-					attr['date'] = info.getDate()
-					attr['kaijou'] = info.getKaijou()
-					attr['kaien'] = info.getKaien()
-					attr['hall'] = info.getHall()
-					attr['name'] = info.getTitle()
-					attr['ryoukin'] = info.getRyoukin()
-					concertElement = SubElement(root, 'concert', attr)
-					kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
-					for kyoku in info.info['kyoku']:
-						kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
-					playerCollectionElement = SubElement(concertElement , 'playerCollection')
-					for player in info.info['player']:
-						playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info.info['player'][player]})
+						attr = {}
+						attr['date'] = info.getDate()
+						attr['kaijou'] = info.getKaijou()
+						attr['kaien'] = info.getKaien()
+						attr['hall'] = info.getHall()
+						attr['name'] = info.getTitle()
+						attr['ryoukin'] = info.getRyoukin()
+						concertElement = SubElement(root, 'concert', attr)
+						kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
+						for kyoku in info.info['kyoku']:
+							kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
+						playerCollectionElement = SubElement(concertElement , 'playerCollection')
+						for player in info.info['player']:
+							playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info.info['player'][player]})
 
-	with open('concertinfo.xml', 'w') as xml:
-		rough_string = tostring(root, 'utf-8')
-		reparsed = minidom.parseString(rough_string)
-		xml.write(reparsed.toprettyxml(indent="  "))
+				except Exception as e:
+					textfile.write(str(e) + '\n')
+	return root
 
 def loadConcertSchema(filepath):
 	master = {}
