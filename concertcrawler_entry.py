@@ -15,9 +15,9 @@ fileoutdir = sys.argv[2]
 
 master = concertcrawler.loadConcertSchema(schemafilepath)
 urls = concertcrawler.getPastOrchestra()
-with open(os.path.join(fileoutdir, 'concertinfo.txt'), 'w') as file:
+with open(os.path.join(fileoutdir, 'NewConcert.txt'), 'w') as file:
 	root = concertcrawler.getTextAllAndOutputFile(master, urls, file)
 
-	with open(os.path.join(fileoutdir, 'concertinfo.xml'), 'w', encoding='utf-8') as xml:
+	with open(os.path.join(fileoutdir, 'NewConcert.xml'), 'w', encoding='utf-8') as xml:
 		reparsed = minidom.parseString(tostring(root, 'utf-8'))
 		xml.write(reparsed.toprettyxml(indent="  "))
