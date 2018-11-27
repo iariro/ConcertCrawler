@@ -278,7 +278,7 @@ def scrape1Orchestra(orchestra, lines, master):
 		conductor = re.search("指揮[  :：](.*)", line)
 		if conductor:
 			info.info['player']['指揮'] = conductor.group(1)
-		info.info['player']['管弦楽団'] = orchestra
+		info.info['player']['管弦楽'] = orchestra
 
 	return info
 
@@ -352,7 +352,7 @@ def scrapeAllFromFile(master, concertinfofilepath):
 		xml.write(reparsed.toprettyxml(indent="  "))
 
 def getTextAllAndOutputFile(master, urls, textfile):
-	root = Element('Concert')
+	root = Element('concertCollection')
 	tree = ElementTree(element=root)
 	for url in urls:
 		print(url)
