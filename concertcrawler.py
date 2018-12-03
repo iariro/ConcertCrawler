@@ -46,7 +46,7 @@ def getTextFromOrchestraSite(url, file):
 				lines.append(line)
 		return lines
 	except Exception as e:
-		file.write(str(e) + '\n')
+		file.write('Scrape:' + str(e) + '\n')
 
 def zenkakuToHankaku(zenkaku):
 	digitMap = {}
@@ -355,19 +355,28 @@ def getTextAllAndOutputFile(master, urls, textfile):
 	root = Element('concertCollection')
 	tree = ElementTree(element=root)
 	for url in urls:
-		print(url)
-		lines = getTextFromOrchestraSite(url, textfile)
-		if lines:
-			info = scrape1Orchestra(url['title'], lines, master)
-			if 'date' in info.info:
-				try:
-					textfile.write('----------------------------------------------' + '\n')
-					textfile.write(url['title'] + '\n')
+			try:
+				textfile.write('----------------------------------------------' + '\n')
+				textfile.write(url['title'] + '\n')
+			except Exception as e:
+				textfile.write('Output1:' + str(e) + '\n')
+
+			lines = getTextFromOrchestraSite(url, textfile)
+			if lines:
+				info = scrape1Orchestra(url['title'], lines, master)
+				if 'date' in info.info:
 					if info.getDate() > url['lastdate']:
 						textfile.write('%s <- %s\n' % (info.getDate(), url['lastdate']))
-						textfile.write(str(info.info) + '\n')
+						try:
+							textfile.write(str(info.info) + '\n')
+						except Exception as e:
+							textfile.write('Output2:' + str(e) + '\n')
+
 						for line in lines:
-							textfile.write(line + '\n')
+							try:
+								textfile.write(line + '\n')
+							except Exception as e:
+								textfile.write('Output3:' + str(e) + '\n')
 
 						attr = {}
 						attr['date'] = info.getDate()
@@ -384,8 +393,6 @@ def getTextAllAndOutputFile(master, urls, textfile):
 						for player in info.info['player']:
 							playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info.info['player'][player]})
 
-				except Exception as e:
-					textfile.write(str(e) + '\n')
 	return root
 
 def loadConcertSchema(filepath):
