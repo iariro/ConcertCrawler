@@ -1,7 +1,9 @@
 #!/usr/local/bin/python3
 
 import re
+import pandas as pd
 from datetime import datetime, timedelta
+import pymssql
 import urllib
 import urllib.parse
 import urllib.request as urllib2
@@ -9,7 +11,28 @@ from xml.etree.ElementTree import ElementTree, Element, SubElement, Comment, tos
 from xml.dom import minidom
 from bs4 import BeautifulSoup
 
-def getPastOrchestra():
+def getPastOrchestraFromDB():
+	sql = '''select Player.name as title, Player.siteurl as url, Player.siteencoding, max(Concert.date) as lastdate from Concert
+	join Shutsuen on Shutsuen.concertId=Concert.id
+	join Player on Player.id=Shutsuen.playerId
+	where Shutsuen.partId=1 and len(Player.siteurl)>0
+	group by player.id, Player.name, Player.siteurl, Player.siteencoding
+	having max(Concert.date) < getdate() order by max(Concert.date)
+	'''
+	connect = pymssql.connect(host='localhost:2144', user='sa', password='p@ssw0rd', database='concert')
+	df = pd.io.sql.read_sql(sql, connect)
+	connect.close()
+
+	urls = []
+	for index, row in df.iterrows():
+		urls.append({
+			'title': row['title'],
+			'url': row['url'],
+			'siteencoding': row['siteencoding'],
+			'lastdate': row['lastdate'].strftime('%Y/%m/%d')})
+	return urls
+
+def getPastOrchestraFromSite():
 	urls = []
 	
 	url = 'http://www2.gol.com/users/ip0601170243/private/web/concert/pastorchestra.htm'
@@ -34,7 +57,10 @@ def getTextFromOrchestraSite(url, file):
 	req = urllib.request.Request(url['url'], headers={'User-Agent': 'concertcrawler'})
 	try:
 		html = urllib.request.urlopen(req)
-		soup = BeautifulSoup(html, "html.parser")
+		if url['siteencoding']:
+			soup = BeautifulSoup(html, "html.parser", fromEncoding=url['siteencoding'])
+		else:
+			soup = BeautifulSoup(html, "html.parser")
 
 		[s.extract() for s in soup('style')]
 		[s.extract() for s in soup('script')]
@@ -79,6 +105,10 @@ class ConcertInformation:
 	def set(self, key, value):
 		if key not in self.info:
 			self.info[key] = value
+
+	def setDate(self, value):
+		if ('date' not in self.info) or (value > self.info['date']):
+			self.info['date'] = value
 
 	def get(self, key):
 		return self.info[key]
@@ -173,7 +203,7 @@ def scrape1Orchestra(orchestra, lines, master):
 			day = int(zenkakuToHankaku(date5.group(3)))
 
 		if year and month and day:
-			info.set('date', "%04d/%02d/%02d" % (int(year), int(month), int(day)))
+			info.setDate("%04d/%02d/%02d" % (int(year), int(month), int(day)))
 
 		kaijou0 = re.search('午後([0-9０-９]*)時([0-9０-９]*)分開場', line)
 		kaijou1 = re.search('([0-9０-９]{2}[:：][0-9０-９]{2})[ 　]*開場', line)
@@ -256,8 +286,9 @@ def scrape1Orchestra(orchestra, lines, master):
 
 		for composer in master['composerName']:
 			if composer in line:
-				kyokumoku1 = re.search(composer + "[  ]*[:：/／][  ]*(.*)", line)
-				kyokumoku2 = re.search("(.*)[  ]*[:：/／][  ]" + composer, line)
+				kyokumoku1 = re.search(composer + "[ 　]*[:：/／][ 　]*(.*)", line)
+				kyokumoku2 = re.search("(.*)[ 　]*[:：/／][ 　]" + composer, line)
+				kyokumoku3 = re.search(composer + "[ 　]*(.*)", line)
 
 				if kyokumoku1:
 					title = kyokumoku1.group(1)
@@ -272,6 +303,10 @@ def scrape1Orchestra(orchestra, lines, master):
 					break
 				elif kyokumoku2:
 					title = kyokumoku2.group(1)
+					info.info['kyoku'].append({'composer': composer, 'title': title})
+					break
+				elif kyokumoku3:
+					title = kyokumoku3.group(1)
 					info.info['kyoku'].append({'composer': composer, 'title': title})
 					break
 
@@ -355,43 +390,45 @@ def getTextAllAndOutputFile(master, urls, textfile):
 	root = Element('concertCollection')
 	tree = ElementTree(element=root)
 	for url in urls:
-			try:
-				textfile.write('----------------------------------------------' + '\n')
-				textfile.write(url['title'] + '\n')
-			except Exception as e:
-				textfile.write('Output1:' + str(e) + '\n')
+		try:
+			textfile.write('----------------------------------------------' + '\n')
+			textfile.write(url['title'] + '\n')
+		except Exception as e:
+			textfile.write('Output1:' + str(e) + '\n')
 
-			lines = getTextFromOrchestraSite(url, textfile)
-			if lines:
-				info = scrape1Orchestra(url['title'], lines, master)
-				if 'date' in info.info:
-					if info.getDate() > url['lastdate']:
-						textfile.write('%s <- %s\n' % (info.getDate(), url['lastdate']))
-						try:
-							textfile.write(str(info.info) + '\n')
-						except Exception as e:
-							textfile.write('Output2:' + str(e) + '\n')
+		lines = getTextFromOrchestraSite(url, textfile)
+		if lines:
+			info = scrape1Orchestra(url['title'], lines, master)
+			if 'date' in info.info:
+				if info.getDate() > url['lastdate']:
+					textfile.write('%s <- %s\n' % (info.getDate(), url['lastdate']))
+					try:
+						textfile.write(str(info.info) + '\n')
+					except Exception as e:
+						textfile.write('Output2:' + str(e) + '\n')
 
-						for line in lines:
-							try:
-								textfile.write(line + '\n')
-							except Exception as e:
-								textfile.write('Output3:' + str(e) + '\n')
+					attr = {}
+					attr['date'] = info.getDate()
+					attr['kaijou'] = info.getKaijou()
+					attr['kaien'] = info.getKaien()
+					attr['hall'] = info.getHall()
+					attr['name'] = info.getTitle()
+					attr['ryoukin'] = info.getRyoukin()
+					concertElement = SubElement(root, 'concert', attr)
+					kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
+					for kyoku in info.info['kyoku']:
+						kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
+					playerCollectionElement = SubElement(concertElement , 'playerCollection')
+					for player in info.info['player']:
+						playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info.info['player'][player]})
+			else:
+				textfile.write('date not found\n')
 
-						attr = {}
-						attr['date'] = info.getDate()
-						attr['kaijou'] = info.getKaijou()
-						attr['kaien'] = info.getKaien()
-						attr['hall'] = info.getHall()
-						attr['name'] = info.getTitle()
-						attr['ryoukin'] = info.getRyoukin()
-						concertElement = SubElement(root, 'concert', attr)
-						kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
-						for kyoku in info.info['kyoku']:
-							kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
-						playerCollectionElement = SubElement(concertElement , 'playerCollection')
-						for player in info.info['player']:
-							playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info.info['player'][player]})
+			for line in lines:
+				try:
+					textfile.write(line + '\n')
+				except Exception as e:
+					textfile.write('Output3:' + str(e) + '\n')
 
 	return root
 

@@ -14,7 +14,7 @@ schemafilepath = sys.argv[1]
 fileoutdir = sys.argv[2]
 
 master = concertcrawler.loadConcertSchema(schemafilepath)
-urls = concertcrawler.getPastOrchestra()
+urls = concertcrawler.getPastOrchestraFromDB()
 with open(os.path.join(fileoutdir, 'NewConcert.txt'), 'w') as file:
 	root = concertcrawler.getTextAllAndOutputFile(master, urls, file)
 

@@ -19,13 +19,13 @@ class MyTest(unittest.TestCase):
             "入場無料",
             "Copyright (C) 2014 TEIKYO University Symphony Orchestra　All Rights Reserved."
             ]
-        info = concertcrawler.scrape1Orchestra(lines, self.master)
-        self.assertEqual("第32回定期演奏会", info['title'])
-        self.assertEqual("2015/12/28", info['date'])
-        self.assertEqual("13：30", info['kaijou'])
-        self.assertEqual("14：00", info['kaien'])
-        self.assertEqual("オリンパスホール八王子", info['hall'])
-        self.assertEqual("入場無料", info['ryoukin'])
+        info = concertcrawler.scrape1Orchestra('帝京大学交響楽団', lines, self.master)
+        self.assertEqual("第32回定期演奏会", info.info['title'])
+        self.assertEqual("2015/12/28", info.info['date'])
+        self.assertEqual("13:30", info.info['kaijou'])
+        self.assertEqual("14:00", info.info['kaien'])
+        self.assertEqual("オリンパスホール八王子", info.info['hall'])
+        self.assertEqual("入場無料", info.info['ryoukin'])
 
     def test_zennihonika201804(self):
         lines2 = [
@@ -69,12 +69,12 @@ class MyTest(unittest.TestCase):
             "Dr.muse@nifty.com",
             "UnicodeEncodeError"
         ]
-        info = concertcrawler.scrape1Orchestra(lines2, self.master)
-        self.assertEqual("第28回定期演奏会", info['title'])
-        self.assertEqual("2018/4/1", info['date'])
-        self.assertEqual("14:00", info['kaien'])
-        self.assertEqual("東京オペラシティ", info['hall'])
-        self.assertEqual("全席指定：Ｓ席2,500円、Ａ席1,500円", info['ryoukin'])
+        info = concertcrawler.scrape1Orchestra('全日本医家管弦楽団', lines2, self.master)
+        self.assertEqual("第28回定期演奏会", info.info['title'])
+        self.assertEqual("2018/04/01", info.info['date'])
+        self.assertEqual("14:00", info.info['kaien'])
+        self.assertEqual("東京オペラシティ", info.info['hall'])
+        self.assertEqual("全席指定：Ｓ席2,500円、Ａ席1,500円", info.info['ryoukin'])
 
     def test_mitaphil201905(self):
         lines = [
@@ -98,10 +98,10 @@ class MyTest(unittest.TestCase):
             "エルガー / 弦楽セレナーデ　ホ短調 作品２０",
             "Sign in|Report Abuse|Print Page|Powered By Google Sites"
         ]
-        info = concertcrawler.scrape1Orchestra(lines, self.master)
-        self.assertEqual("第28回定期演奏会", info['title'])
-        self.assertEqual("めぐろパーシモン", info['hall'])
-        self.assertEqual("入場無料", info['ryoukin'])
+        info = concertcrawler.scrape1Orchestra('三田フィルハーモニーオーケストラ', lines, self.master)
+        self.assertEqual("第28回定期演奏会", info.info['title'])
+        self.assertEqual("めぐろパーシモン", info.info['hall'])
+        self.assertEqual("入場無料", info.info['ryoukin'])
 
     def test_mozart201805(self):
         lines = [
@@ -133,11 +133,11 @@ class MyTest(unittest.TestCase):
             "これまでの演奏会一覧はこちら",
             "最終更新日2018年11月5日"
         ]
-        info = concertcrawler.scrape1Orchestra(lines, self.master)
-        self.assertEqual("第34回定期演奏会", info['title'])
-        self.assertEqual("14:00", info['kaien'])
-        self.assertEqual("13:30", info['kaijou'])
-        self.assertEqual("第一生命ホール", info['hall'])
+        info = concertcrawler.scrape1Orchestra('モーツァルト・アンサンブル・オーケストラ', lines, self.master)
+        self.assertEqual("第34回定期演奏会", info.info['title'])
+        self.assertEqual("14:00", info.info['kaien'])
+        self.assertEqual("13:30", info.info['kaijou'])
+        self.assertEqual("第一生命ホール", info.info['hall'])
 
     def test_funabashijunior201903(self):
         lines = [
@@ -153,10 +153,10 @@ class MyTest(unittest.TestCase):
             "＊序曲「天国と地獄」　　　オッフェンバック",
             "その他"
             ]
-        info = concertcrawler.scrape1Orchestra(lines, self.master)
-        self.assertEqual("14：00", info['kaien'])
-        self.assertEqual("2019/3/30", info['date'])
-        self.assertEqual("船橋市民文化ホール", info['hall'])
+        info = concertcrawler.scrape1Orchestra('船橋ジュニアオーケストラ事務局', lines, self.master)
+        self.assertEqual("14:00", info.info['kaien'])
+        self.assertEqual("2019/03/30", info.info['date'])
+        self.assertEqual("船橋市民文化ホール", info.info['hall'])
 
     def test_tokyogaikokugo201804(self):
         lines = [
@@ -216,7 +216,7 @@ class MyTest(unittest.TestCase):
             "アクセスカウンター",
             "UnicodeEncodeError"
         ]
-        info = concertcrawler.scrape1Orchestra(lines, self.master)
+        info = concertcrawler.scrape1Orchestra('東京外国語大学管弦楽団', lines, self.master)
         self.assertEqual("2018/4/14", info['date'])
         self.assertEqual("17:15", info['kaijou'])
         self.assertEqual("18:00", info['kaien'])
@@ -251,10 +251,15 @@ class MyTest(unittest.TestCase):
             "Template design by",
             "Nikukyu-Pundh"
         ]
-        info = concertcrawler.scrape1Orchestra(lines, self.master)
-        self.assertEqual("13:30", info['kaijou'])
-        self.assertEqual("14：00", info['kaien'])
-        self.assertEqual("かつしかシンフォニーヒルズ", info['hall'])
-        self.assertEqual("入場無料", info['ryoukin'])
+        info = concertcrawler.scrape1Orchestra('Ensemble ARDORE Home Page', lines, self.master)
+        self.assertEqual("13:30", info.info['kaijou'])
+        self.assertEqual("14:00", info.info['kaien'])
+        self.assertEqual("かつしかシンフォニーヒルズ", info.info['hall'])
+        self.assertEqual("入場無料", info.info['ryoukin'])
+
+    def test_getPastOrchestraFromDB(self):
+        urls = concertcrawler.getPastOrchestraFromDB()
+        for url in urls:
+            print(url['siteencoding'])
 
 unittest.main()
