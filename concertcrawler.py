@@ -387,7 +387,11 @@ def scrapeAllFromFile(master, concertinfofilepath):
 		xml.write(reparsed.toprettyxml(indent="  "))
 
 def getTextAllAndOutputFile(master, urls, textfile):
-	root = Element('concertCollection')
+	ns = {'xmlns:c': 'concert',
+		'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+		'xsi:schemaLocation': 'concert Concert.xsd'}
+
+	root = Element('c:concertCollection', ns)
 	tree = ElementTree(element=root)
 	for url in urls:
 		try:

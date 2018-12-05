@@ -260,6 +260,9 @@ class MyTest(unittest.TestCase):
     def test_getPastOrchestraFromDB(self):
         urls = concertcrawler.getPastOrchestraFromDB()
         for url in urls:
-            print(url['siteencoding'])
+            if url['siteencoding']:
+                print(url['siteencoding'])
+            else:
+                print('-')
 
 unittest.main()
