@@ -11,7 +11,7 @@ from xml.etree.ElementTree import ElementTree, Element, SubElement, Comment, tos
 from xml.dom import minidom
 from bs4 import BeautifulSoup
 
-def getPastOrchestraFromDB():
+def getPastOrchestraFromDB(host):
 	sql = '''select Player.name as title, Player.siteurl as url, Player.siteencoding, max(Concert.date) as lastdate from Concert
 	join Shutsuen on Shutsuen.concertId=Concert.id
 	join Player on Player.id=Shutsuen.playerId
@@ -19,7 +19,7 @@ def getPastOrchestraFromDB():
 	group by player.id, Player.name, Player.siteurl, Player.siteencoding
 	having max(Concert.date) < getdate() order by max(Concert.date)
 	'''
-	connect = pymssql.connect(host='localhost:2144', user='sa', password='p@ssw0rd', database='concert')
+	connect = pymssql.connect(host='%s:2144' % (host), user='sa', password='p@ssw0rd', database='concert')
 	df = pd.io.sql.read_sql(sql, connect)
 	connect.close()
 
