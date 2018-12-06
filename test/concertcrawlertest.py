@@ -258,11 +258,8 @@ class MyTest(unittest.TestCase):
         self.assertEqual("入場無料", info.info['ryoukin'])
 
     def test_getPastOrchestraFromDB(self):
-        urls = concertcrawler.getPastOrchestraFromDB('192.168.10.10')
-        for url in urls:
-            if url['siteencoding']:
-                print(url['siteencoding'])
-            else:
-                print('-')
+        orchestras = concertcrawler.getPastOrchestraFromDB('192.168.10.10')
+        for orchestra in orchestras:
+            print(orchestra)
 
 unittest.main()

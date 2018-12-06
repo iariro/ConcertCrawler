@@ -12,11 +12,11 @@ from xml.dom import minidom
 from bs4 import BeautifulSoup
 
 def getPastOrchestraFromDB(host):
-	sql = '''select Player.name as title, Player.siteurl as url, Player.siteencoding, max(Concert.date) as lastdate from Concert
+	sql = '''select Player.name as title, Player.siteurl as url, Player.siteencoding, Player.active, max(Concert.date) as lastdate from Concert
 	join Shutsuen on Shutsuen.concertId=Concert.id
 	join Player on Player.id=Shutsuen.playerId
-	where Shutsuen.partId=1 and len(Player.siteurl)>0
-	group by player.id, Player.name, Player.siteurl, Player.siteencoding
+	where Shutsuen.partId=1 and len(Player.siteurl)>0 and Player.active=1
+	group by player.id, Player.name, Player.siteurl, Player.siteencoding, Player.active
 	having max(Concert.date) < getdate() order by max(Concert.date)
 	'''
 	connect = pymssql.connect(host='%s:2144' % (host), user='sa', password='p@ssw0rd', database='concert')
@@ -29,6 +29,7 @@ def getPastOrchestraFromDB(host):
 			'title': row['title'],
 			'url': row['url'],
 			'siteencoding': row['siteencoding'],
+			'active': row['active'],
 			'lastdate': row['lastdate'].strftime('%Y/%m/%d')})
 	return urls
 
