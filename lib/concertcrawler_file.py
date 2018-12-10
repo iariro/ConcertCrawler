@@ -98,7 +98,7 @@ def scrape1Orchestra(orchestra, lines, master):
     for line in lines:
         date11 = re.search('（*([0-9]{4}) *年）* *([0-9]*) *月 *([0-9]*) *日', line)
         date12 = re.search('（*([０-９]{4}) *年）* *([０-９]*) *月 *([０-９]*) *日', line)
-        date2 = re.search('平成([０-９]*)年([０-９]*)月([０-９]*)日', line)
+        date2 = re.search('平成([０-９0-9]*)年([０-９0-9]*)月([０-９0-9]*)日', line)
         date31 = re.search('([0-9]{2})/([0-9]*)/([0-9]{1-2})', line)
         date32 = re.search('([0-9]{4})/([0-9]{1-2})/([0-9]{1-2})', line)
         date4 = re.search('([0-9]{4})\.([0-9]{1-2})\.([0-9]{1-2})', line)
@@ -307,10 +307,10 @@ def scrapeAllFromFile(master, concertinfofilepath):
                         concertElement = SubElement(root, 'concert', attr)
                         kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
                         for kyoku in info['kyoku']:
-                            kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
+                            kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'name': kyoku['title']})
                         playerCollectionElement = SubElement(concertElement , 'playerCollection')
                         for player in info['player']:
-                            playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'player': info['player'][player]})
+                            playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info['player'][player]})
                         lines = []
                 else:
                     lines.append(line)
