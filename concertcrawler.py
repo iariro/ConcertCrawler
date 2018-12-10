@@ -1,10 +1,11 @@
-#!/usr/local/bin/python3
-
-import os.path
 import sys
+sys.path.append('lib')
+import os.path
 from xml.etree.ElementTree import tostring
 from xml.dom import minidom
-import concertcrawler
+import concertcrawler_file
+import concertcrawler_db
+import concertcrawler_net
 
 if len(sys.argv) < 3:
 	print('Usage: schemafilepath fileoutdirpath')
