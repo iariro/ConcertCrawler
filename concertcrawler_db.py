@@ -1,13 +1,79 @@
 #!/usr/local/bin/python3
 
 import re
+import pandas as pd
 from datetime import datetime, timedelta
+import pymssql
 import urllib
 import urllib.parse
 import urllib.request as urllib2
 from xml.etree.ElementTree import ElementTree, Element, SubElement, Comment, tostring
 from xml.dom import minidom
 from bs4 import BeautifulSoup
+
+def getPastOrchestraFromDB(host):
+	sql = '''select Player.name as title, Player.siteurl as url, Player.siteencoding, Player.active, max(Concert.date) as lastdate from Concert
+	join Shutsuen on Shutsuen.concertId=Concert.id
+	join Player on Player.id=Shutsuen.playerId
+	where Shutsuen.partId=1 and len(Player.siteurl)>0 and Player.active=1
+	group by player.id, Player.name, Player.siteurl, Player.siteencoding, Player.active
+	having max(Concert.date) < getdate() order by max(Concert.date)
+	'''
+	connect = pymssql.connect(host='%s:2144' % (host), user='sa', password='p@ssw0rd', database='concert')
+	df = pd.io.sql.read_sql(sql, connect)
+	connect.close()
+
+	urls = []
+	for index, row in df.iterrows():
+		urls.append({
+			'title': row['title'],
+			'url': row['url'],
+			'siteencoding': row['siteencoding'],
+			'active': row['active'],
+			'lastdate': row['lastdate'].strftime('%Y/%m/%d')})
+	return urls
+
+def getPastOrchestraFromSite():
+	urls = []
+	
+	url = 'http://www2.gol.com/users/ip0601170243/private/web/concert/pastorchestra.htm'
+	ua = 'concertcrawler'
+
+	req = urllib.request.Request(url, headers={'User-Agent':ua})
+	html = urllib.request.urlopen(req)
+	soup = BeautifulSoup(html, "html.parser")
+
+	urls = []
+	for tr in soup.find_all('tr'):
+		tds = tr.find_all('td')
+		if tds[0].a == None:
+			continue
+		urls.append({
+			'title':tds[0].a.string.strip(),
+			'url':tds[0].a.get('href'),
+			'lastdate':tds[1].string.split()[0]})
+	return urls
+
+def getTextFromOrchestraSite(url, file):
+	req = urllib.request.Request(url['url'], headers={'User-Agent': 'concertcrawler'})
+	try:
+		html = urllib.request.urlopen(req)
+		if url['siteencoding']:
+			soup = BeautifulSoup(html, "html.parser", fromEncoding=url['siteencoding'])
+		else:
+			soup = BeautifulSoup(html, "html.parser")
+
+		[s.extract() for s in soup('style')]
+		[s.extract() for s in soup('script')]
+
+		lines = []
+		for line in soup.text.split('\n'):
+			line = line.strip()
+			if len(line) > 0:
+				lines.append(line)
+		return lines
+	except Exception as e:
+		file.write('Scrape:' + str(e) + '\n')
 
 def zenkakuToHankaku(zenkaku):
 	digitMap = {}
@@ -258,13 +324,14 @@ def scrapeAllFromFile(master, concertinfofilepath):
 	titleCount = 0
 	kaijouCount = 0
 	kaienCount = 0
-
-	ns = {'xmlns:c': 'concert',
-		'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-		'xsi:schemaLocation': 'concert Concert.xsd'}
-
-	root = Element('c:concertCollection', ns)
+	root = Element('Concert')
 	tree = ElementTree(element=root)
+
+#        Element top = createElement("c:concertCollection");
+#        appendChild(top);
+#        top.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+#        top.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:c", "concert");
+#        top.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xsi:schemaLocation", "concert Concert.xsd");
 
 	with open(concertinfofilepath, encoding='utf-8') as file:
 		lines = []
@@ -281,7 +348,6 @@ def scrapeAllFromFile(master, concertinfofilepath):
 					lineFlag = True
 					if len(lines) > 0:
 						info = scrape1Orchestra(orchestra, lines, master)
-						info = info.info
 						totalCount += 1
 						if 'date' in info:
 							dateCount += 1
@@ -316,10 +382,60 @@ def scrapeAllFromFile(master, concertinfofilepath):
 
 	print("total:%d date:%d kaijou:%d kaien:%d title:%d" % (totalCount, dateCount, kaijouCount, kaienCount, titleCount))
 
-	with open('NewConcert.xml', 'w') as xml:
+	with open('concertinfo.xml', 'w') as xml:
 		rough_string = tostring(root, 'utf-8')
 		reparsed = minidom.parseString(rough_string)
 		xml.write(reparsed.toprettyxml(indent="  "))
+
+def getTextAllAndOutputFile(master, urls, textfile):
+	ns = {'xmlns:c': 'concert',
+		'xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+		'xsi:schemaLocation': 'concert Concert.xsd'}
+
+	root = Element('c:concertCollection', ns)
+	tree = ElementTree(element=root)
+	for url in urls:
+		try:
+			textfile.write('----------------------------------------------' + '\n')
+			textfile.write(url['title'] + '\n')
+		except Exception as e:
+			textfile.write('Output1:' + str(e) + '\n')
+
+		lines = getTextFromOrchestraSite(url, textfile)
+		if lines:
+			info = scrape1Orchestra(url['title'], lines, master)
+			if 'date' in info.info:
+				if info.getDate() > url['lastdate']:
+					textfile.write('%s <- %s\n' % (info.getDate(), url['lastdate']))
+					try:
+						textfile.write(str(info.info) + '\n')
+					except Exception as e:
+						textfile.write('Output2:' + str(e) + '\n')
+
+					attr = {}
+					attr['date'] = info.getDate()
+					attr['kaijou'] = info.getKaijou()
+					attr['kaien'] = info.getKaien()
+					attr['hall'] = info.getHall()
+					attr['name'] = info.getTitle()
+					attr['ryoukin'] = info.getRyoukin()
+					concertElement = SubElement(root, 'concert', attr)
+					kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
+					for kyoku in info.info['kyoku']:
+						kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
+					playerCollectionElement = SubElement(concertElement , 'playerCollection')
+					for player in info.info['player']:
+						playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info.info['player'][player]})
+			else:
+				textfile.write('date not found\n')
+
+			for line in lines:
+				try:
+					textfile.write(line + '\n')
+				except Exception as e:
+					textfile.write('Output3:' + str(e) + '\n')
+
+	return root
 
 def loadConcertSchema(filepath):
 	master = {}
