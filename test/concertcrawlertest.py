@@ -1,11 +1,12 @@
 import unittest
 import sys
-sys.path.append('..')
-import concertcrawler
+sys.path.append('../lib')
+import concertcrawler_file
+import concertcrawler_db
 
 class MyTest(unittest.TestCase):
     def setUp(self):
-        self.master = concertcrawler.loadConcertSchema(r'../testdata/ConcertSchema.xsd')
+        self.master = concertcrawler_file.loadConcertSchema(r'../testdata/ConcertSchema.xsd')
 
     def test_teikyou201512(self):
         lines = [
@@ -19,7 +20,7 @@ class MyTest(unittest.TestCase):
             "入場無料",
             "Copyright (C) 2014 TEIKYO University Symphony Orchestra　All Rights Reserved."
             ]
-        info = concertcrawler.scrape1Orchestra('帝京大学交響楽団', lines, self.master)
+        info = concertcrawler_file.scrape1Orchestra('帝京大学交響楽団', lines, self.master)
         self.assertEqual("第32回定期演奏会", info.info['title'])
         self.assertEqual("2015/12/28", info.info['date'])
         self.assertEqual("13:30", info.info['kaijou'])
@@ -69,7 +70,7 @@ class MyTest(unittest.TestCase):
             "Dr.muse@nifty.com",
             "UnicodeEncodeError"
         ]
-        info = concertcrawler.scrape1Orchestra('全日本医家管弦楽団', lines2, self.master)
+        info = concertcrawler_file.scrape1Orchestra('全日本医家管弦楽団', lines2, self.master)
         self.assertEqual("第28回定期演奏会", info.info['title'])
         self.assertEqual("2018/04/01", info.info['date'])
         self.assertEqual("14:00", info.info['kaien'])
@@ -98,7 +99,7 @@ class MyTest(unittest.TestCase):
             "エルガー / 弦楽セレナーデ　ホ短調 作品２０",
             "Sign in|Report Abuse|Print Page|Powered By Google Sites"
         ]
-        info = concertcrawler.scrape1Orchestra('三田フィルハーモニーオーケストラ', lines, self.master)
+        info = concertcrawler_file.scrape1Orchestra('三田フィルハーモニーオーケストラ', lines, self.master)
         self.assertEqual("第28回定期演奏会", info.info['title'])
         self.assertEqual("めぐろパーシモン", info.info['hall'])
         self.assertEqual("入場無料", info.info['ryoukin'])
@@ -133,7 +134,7 @@ class MyTest(unittest.TestCase):
             "これまでの演奏会一覧はこちら",
             "最終更新日2018年11月5日"
         ]
-        info = concertcrawler.scrape1Orchestra('モーツァルト・アンサンブル・オーケストラ', lines, self.master)
+        info = concertcrawler_file.scrape1Orchestra('モーツァルト・アンサンブル・オーケストラ', lines, self.master)
         self.assertEqual("第34回定期演奏会", info.info['title'])
         self.assertEqual("14:00", info.info['kaien'])
         self.assertEqual("13:30", info.info['kaijou'])
@@ -153,7 +154,7 @@ class MyTest(unittest.TestCase):
             "＊序曲「天国と地獄」　　　オッフェンバック",
             "その他"
             ]
-        info = concertcrawler.scrape1Orchestra('船橋ジュニアオーケストラ事務局', lines, self.master)
+        info = concertcrawler_file.scrape1Orchestra('船橋ジュニアオーケストラ事務局', lines, self.master)
         self.assertEqual("14:00", info.info['kaien'])
         self.assertEqual("2019/03/30", info.info['date'])
         self.assertEqual("船橋市民文化ホール", info.info['hall'])
@@ -251,14 +252,14 @@ class MyTest(unittest.TestCase):
             "Template design by",
             "Nikukyu-Pundh"
         ]
-        info = concertcrawler.scrape1Orchestra('Ensemble ARDORE Home Page', lines, self.master)
+        info = concertcrawler_file.scrape1Orchestra('Ensemble ARDORE Home Page', lines, self.master)
         self.assertEqual("13:30", info.info['kaijou'])
         self.assertEqual("14:00", info.info['kaien'])
         self.assertEqual("かつしかシンフォニーヒルズ", info.info['hall'])
         self.assertEqual("入場無料", info.info['ryoukin'])
 
     def test_getPastOrchestraFromDB(self):
-        orchestras = concertcrawler.getPastOrchestraFromDB('192.168.10.10')
+        orchestras = concertcrawler_db.getPastOrchestraFromDB('192.168.10.10')
         for orchestra in orchestras:
             print(orchestra)
 
