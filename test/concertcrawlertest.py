@@ -8,6 +8,23 @@ class MyTest(unittest.TestCase):
     def setUp(self):
         self.master = concertcrawler_file.loadConcertSchema(r'../testdata/ConcertSchema.xsd')
 
+    def test_serena201908(self):
+        lines = [
+			'次回演奏会のご案内',
+			'第10回演奏会',
+			'2019.8.11(日祝)　午後開催',
+			'at 杉並公会堂 大ホール （荻窪駅北口より徒歩7分：地図）',
+			'指揮',
+			'中田 延亮',
+			'ドヴォルザーク：交響曲第9番 ホ短調 op.95「新世界より」　他',
+			'トピックス',
+			'第9回演奏会は終了いたしました。ご来場いただき、ありがとうございました。（2018.8.20）'
+            ]
+        info = concertcrawler_file.scrape1Orchestra('オーケストラ・セレーナ', lines, self.master)
+        self.assertEqual('第10回演奏会', info.info['title'])
+        self.assertEqual('2019/08/11', info.info['date'])
+        self.assertEqual('杉並公会堂', info.info['hall'])
+
     def test_teikyou201512(self):
         lines = [
             "帝京大学交響楽団/TEIKYO University Symphony Orchestra",
@@ -260,7 +277,6 @@ class MyTest(unittest.TestCase):
 
     def test_getPastOrchestraFromDB(self):
         orchestras = concertcrawler_db.getPastOrchestraFromDB('192.168.10.10')
-        for orchestra in orchestras:
-            print(orchestra)
+        self.assertTrue(len(orchestras) > 0)
 
 unittest.main()

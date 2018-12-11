@@ -96,13 +96,13 @@ class ConcertInformation:
 def scrape1Orchestra(orchestra, lines, master):
     info = ConcertInformation()
     for line in lines:
-        date11 = re.search('（*([0-9]{4}) *年）* *([0-9]*) *月 *([0-9]*) *日', line)
-        date12 = re.search('（*([０-９]{4}) *年）* *([０-９]*) *月 *([０-９]*) *日', line)
-        date2 = re.search('平成([０-９0-9]*)年([０-９0-9]*)月([０-９0-9]*)日', line)
-        date31 = re.search('([0-9]{2})/([0-9]*)/([0-9]{1-2})', line)
-        date32 = re.search('([0-9]{4})/([0-9]{1-2})/([0-9]{1-2})', line)
-        date4 = re.search('([0-9]{4})\.([0-9]{1-2})\.([0-9]{1-2})', line)
-        date5 = re.search('([0-9]{4})-([0-9]{1-2})-([0-9]{1-2})', line)
+        date11 = re.search('（*([0-9]{4}) *年）* *([0-9]{1,2}) *月 *([0-9]{1,2}) *日', line)
+        date12 = re.search('（*([０-９]{4}) *年）* *([０-９]{1,2}) *月 *([０-９]{1,2}) *日', line)
+        date2 = re.search('平成([０-９0-9]*)年([０-９0-9]{1,2})月([０-９0-9]{1,2})日', line)
+        date31 = re.search('([0-9]{2})/([0-9]{1,2})/([0-9]{1,2})', line)
+        date32 = re.search('([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})', line)
+        date4 = re.search('([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})', line)
+        date5 = re.search('([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})', line)
 
         year = None
         month = None
