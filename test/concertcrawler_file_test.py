@@ -2,7 +2,6 @@ import unittest
 import sys
 sys.path.append('../lib')
 import concertcrawler_file
-import concertcrawler_db
 
 class MyTest(unittest.TestCase):
     def setUp(self):
@@ -274,9 +273,5 @@ class MyTest(unittest.TestCase):
         self.assertEqual("14:00", info.info['kaien'])
         self.assertEqual("かつしかシンフォニーヒルズ", info.info['hall'])
         self.assertEqual("入場無料", info.info['ryoukin'])
-
-    def test_getPastOrchestraFromDB(self):
-        orchestras = concertcrawler_db.getPastOrchestraFromDB('192.168.10.10')
-        self.assertTrue(len(orchestras) > 0)
 
 unittest.main()
