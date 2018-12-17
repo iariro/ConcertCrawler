@@ -60,6 +60,7 @@ def getTextAllAndOutputFile(master, urls, textfile):
 	root = Element('c:concertCollection', ns)
 	tree = ElementTree(element=root)
 	for url in urls:
+		print(url['title'])
 		try:
 			textfile.write('----------------------------------------------' + '\n')
 			textfile.write(url['title'] + '\n')
