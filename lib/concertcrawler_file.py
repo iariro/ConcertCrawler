@@ -264,6 +264,8 @@ def scrapeAllFromFile(master, inputFilePath, outputFilePath):
 
     root = Element('c:concertCollection', ns)
     tree = ElementTree(element=root)
+    comment = Comment(datetime.now().strftime("%Y/%m/%d %H:%M:%S"))
+	root.append(comment)
 
     with open(inputFilePath, encoding='utf-8') as file:
         lines = []
