@@ -59,6 +59,9 @@ def getTextAllAndOutputFile(master, urls, textfile):
 
 	root = Element('c:concertCollection', ns)
 	tree = ElementTree(element=root)
+	comment = Comment(datetime.now().strftime("%Y/%m/%d %H:%M:%S"))
+	root.append(comment)
+
 	for url in urls:
 		print(url['title'])
 		try:
