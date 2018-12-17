@@ -13,11 +13,12 @@ if len(sys.argv) < 3:
 
 schemafilepath = sys.argv[1]
 fileoutdir = sys.argv[2]
+dbhost = sys.argv[3]
 
-master = concertcrawler.loadConcertSchema(schemafilepath)
-urls = concertcrawler.getPastOrchestraFromDB()
+master = concertcrawler_file.loadConcertSchema(schemafilepath)
+urls = concertcrawler_db.getPastOrchestraFromDB(dbhost)
 with open(os.path.join(fileoutdir, 'NewConcert.txt'), 'w') as file:
-	root = concertcrawler.getTextAllAndOutputFile(master, urls, file)
+	root = concertcrawler_net.getTextAllAndOutputFile(master, urls, file)
 
 	with open(os.path.join(fileoutdir, 'NewConcert.xml'), 'w', encoding='utf-8') as xml:
 		reparsed = minidom.parseString(tostring(root, 'utf-8'))

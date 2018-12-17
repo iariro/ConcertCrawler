@@ -8,6 +8,7 @@ import urllib.request as urllib2
 from xml.etree.ElementTree import ElementTree, Element, SubElement, Comment, tostring
 from xml.dom import minidom
 from bs4 import BeautifulSoup
+import concertcrawler_file
 
 def getPastOrchestraFromSite():
 	urls = []
@@ -67,7 +68,7 @@ def getTextAllAndOutputFile(master, urls, textfile):
 
 		lines = getTextFromOrchestraSite(url, textfile)
 		if lines:
-			info = scrape1Orchestra(url['title'], lines, master)
+			info = concertcrawler_file.scrape1Orchestra(url['title'], lines, master)
 			if 'date' in info.info:
 				if info.getDate() > url['lastdate']:
 					textfile.write('%s <- %s\n' % (info.getDate(), url['lastdate']))

@@ -251,7 +251,7 @@ def scrape1Orchestra(orchestra, lines, master):
 
     return info
 
-def scrapeAllFromFile(master, concertinfofilepath):
+def scrapeAllFromFile(master, inputFilePath, outputFilePath):
     totalCount = 0
     dateCount = 0
     titleCount = 0
@@ -265,7 +265,7 @@ def scrapeAllFromFile(master, concertinfofilepath):
     root = Element('c:concertCollection', ns)
     tree = ElementTree(element=root)
 
-    with open(concertinfofilepath, encoding='utf-8') as file:
+    with open(inputFilePath, encoding='utf-8') as file:
         lines = []
         lineFlag = False
         orchestra = None
@@ -301,13 +301,15 @@ def scrapeAllFromFile(master, concertinfofilepath):
                         if 'kaien' in info:
                             attr['kaien'] = info['kaien']
                         if 'title' in info:
-                            attr['title'] = info['title']
+                            attr['name'] = info['title']
                         if 'ryoukin' in info:
                             attr['ryoukin'] = info['ryoukin']
+                        if 'hall' in info:
+                            attr['hall'] = info['hall']
                         concertElement = SubElement(root, 'concert', attr)
                         kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
                         for kyoku in info['kyoku']:
-                            kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'name': kyoku['title']})
+                            kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
                         playerCollectionElement = SubElement(concertElement , 'playerCollection')
                         for player in info['player']:
                             playerElement = SubElement(playerCollectionElement, 'player', {'part': player, 'name': info['player'][player]})
@@ -317,7 +319,7 @@ def scrapeAllFromFile(master, concertinfofilepath):
 
     print("total:%d date:%d kaijou:%d kaien:%d title:%d" % (totalCount, dateCount, kaijouCount, kaienCount, titleCount))
 
-    with open('NewConcert.xml', 'w', encoding='utf-8') as xml:
+    with open(outputFilePath, 'w', encoding='utf-8') as xml:
         rough_string = tostring(root, 'utf-8')
         reparsed = minidom.parseString(rough_string)
         xml.write(reparsed.toprettyxml(indent="  "))
