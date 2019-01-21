@@ -17,7 +17,7 @@ dbhost = sys.argv[3]
 
 master = concertcrawler_file.loadConcertSchema(schemafilepath)
 urls = concertcrawler_db.getPastOrchestraFromDB(dbhost)
-with open(os.path.join(fileoutdir, 'NewConcert.txt'), 'w') as file:
+with open(os.path.join(fileoutdir, 'NewConcert.txt'), 'w', encoding='utf-8') as file:
 	root = concertcrawler_net.getTextAllAndOutputFile(master, urls, file)
 
 	with open(os.path.join(fileoutdir, 'NewConcert.xml'), 'w', encoding='utf-8') as xml:
