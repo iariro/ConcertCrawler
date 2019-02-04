@@ -90,7 +90,7 @@ def getTextAllAndOutputFile(master, urls, textfile):
 					attr['ryoukin'] = info.getRyoukin()
 					concertElement = SubElement(root, 'concert', attr)
 					kyokuCollectionElement = SubElement(concertElement , 'kyokuCollection')
-					for kyoku in info.info['kyoku']:
+					for kyoku in info.info['kyoku'][0:10]:
 						kyokuElement = SubElement(kyokuCollectionElement, 'kyoku', {'composer': kyoku['composer'], 'title': kyoku['title']})
 					playerCollectionElement = SubElement(concertElement , 'playerCollection')
 					for player in info.info['player']:
