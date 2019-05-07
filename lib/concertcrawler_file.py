@@ -63,9 +63,12 @@ class ConcertInformation:
         if 'kaijou' in self.info:
             return self.info['kaijou']
         elif 'kaien' in self.info:
-            kaien2 = datetime.strptime(self.info['kaien'], "%H:%M")
-            kaijou = kaien2 - timedelta(minutes=30)
-            return kaijou.strftime('%H:%M')
+            try:
+                kaien2 = datetime.strptime(self.info['kaien'], "%H:%M")
+                kaijou = kaien2 - timedelta(minutes=30)
+                return kaijou.strftime('%H:%M')
+            except ValueError:
+                return '12:00'
         else:
             return '12:00'
 
