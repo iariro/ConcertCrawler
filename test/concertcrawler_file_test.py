@@ -274,4 +274,25 @@ class MyTest(unittest.TestCase):
         self.assertEqual("かつしかシンフォニーヒルズ", info.info['hall'])
         self.assertEqual("入場無料", info.info['ryoukin'])
 
+    def test_chuuouku201906(self):
+        lines = [
+			"第25回定期演奏会",
+			" 日時　：　 2019年6月2日（日) 開場・開演時間：未定",
+			" 会場　：　 第一生命ホール",
+			"　http://www.harumi-triton.jp/access/",
+			" 入場料：寄付制（予定）",
+			" 指揮　：　 佐藤 雄一（プロフィール紹介）",
+			" グリンカ ／歌劇「ルスランとリュドミラ」序曲",
+			" チャイコフスキー／幻想序曲「ロミオとジュリエット」",
+			" カリンニコフ ／交響曲第1番 ト短調",
+        ]
+        info = concertcrawler_file.scrape1Orchestra('中央区交響楽団', lines, self.master)
+        self.assertEqual("シンフォニーヒルズ", info.info['hall'])
+        self.assertEqual("グリンカ ", info.info['kyokumoku'][0][]'composer')
+        self.assertEqual("歌劇「ルスランとリュドミラ」序曲", info.info['kyokumoku'][0][]'title')
+        self.assertEqual("チャイコフスキー", info.info['kyokumoku'][1][]'composer')
+        self.assertEqual("幻想序曲「ロミオとジュリエット」", info.info['kyokumoku'][1][]'title')
+        self.assertEqual("カリンニコフ ", info.info['kyokumoku'][2][]'composer')
+        self.assertEqual("交響曲第1番 ト短調", info.info['kyokumoku'][2][]'title')
+
 unittest.main()
