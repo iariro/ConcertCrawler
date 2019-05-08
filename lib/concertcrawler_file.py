@@ -151,6 +151,7 @@ def scrape1Orchestra(orchestra, lines, master):
 
         kaien0 = re.search('午後([0-9０-９]*)時開演', line)
         kaien1 = re.search('([0-9０-９]{2}[:：][0-9０-９]{2})[ 　]*開演', line)
+        kaien20 = re.search('開演：([0-9０-９]*)時', line)
         kaien21 = re.search('開演：*　*([0-9０-９]*[:：][0-9０-９]*)', line)
         kaien22 = re.search('開演 PM *([0-9０-９]*)[:：]([0-9０-９]*)', line)
         kaien3 = re.search('([0-9０-９]*)時開演', line)
@@ -175,6 +176,8 @@ def scrape1Orchestra(orchestra, lines, master):
 
         if kaien0:
             info.set('kaien', "%02d:00" % (int(zenkakuToHankaku(kaien0.group(1))) + 12))
+        elif kaien20:
+            info.set('kaien', zenkakuToHankaku(kaien20.group(1) + ":00"))
         elif kaien21:
             info.set('kaien', zenkakuToHankaku(kaien21.group(1)))
         elif kaien22:

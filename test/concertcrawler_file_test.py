@@ -284,15 +284,42 @@ class MyTest(unittest.TestCase):
 			" 指揮　：　 佐藤 雄一（プロフィール紹介）",
 			" グリンカ ／歌劇「ルスランとリュドミラ」序曲",
 			" チャイコフスキー／幻想序曲「ロミオとジュリエット」",
-			" カリンニコフ ／交響曲第1番 ト短調",
+			" カリンニコフ ／交響曲第1番 ト短調"
         ]
         info = concertcrawler_file.scrape1Orchestra('中央区交響楽団', lines, self.master)
-        self.assertEqual("シンフォニーヒルズ", info.info['hall'])
-        self.assertEqual("グリンカ ", info.info['kyokumoku'][0][]'composer')
-        self.assertEqual("歌劇「ルスランとリュドミラ」序曲", info.info['kyokumoku'][0][]'title')
-        self.assertEqual("チャイコフスキー", info.info['kyokumoku'][1][]'composer')
-        self.assertEqual("幻想序曲「ロミオとジュリエット」", info.info['kyokumoku'][1][]'title')
-        self.assertEqual("カリンニコフ ", info.info['kyokumoku'][2][]'composer')
-        self.assertEqual("交響曲第1番 ト短調", info.info['kyokumoku'][2][]'title')
+        self.assertEqual("第一生命ホール", info.info['hall'])
+        self.assertEqual("グリンカ", info.info['kyoku'][0]['composer'])
+        self.assertEqual("歌劇「ルスランとリュドミラ」序曲", info.info['kyoku'][0]['title'])
+        self.assertEqual("チャイコフスキー", info.info['kyoku'][1]['composer'])
+        self.assertEqual("幻想序曲「ロミオとジュリエット」", info.info['kyoku'][1]['title'])
+        self.assertEqual("カリンニコフ", info.info['kyoku'][2]['composer'])
+        self.assertEqual("交響曲第1番 ト短調", info.info['kyoku'][2]['title'])
+
+    def test_nakanoku201910(self):
+        lines = [
+            "中野区民交響楽団/ Nakano-Kumin Symphony Orchestra",
+            "当団について",
+            "演奏会ご案内",
+            "過去の演奏会",
+            "団員募集",
+            "お問い合わせ",
+            "中野区民交響楽団は、１９８１年の創立以来中野区を拠点に活動をするアマチュア・オーケストラです",
+            "♪　次回演奏会ご案内",
+            "日　時：２０１９年１０月１３日（日）開演：14時（予定）",
+            "会　場：なかのZERO大ホール",
+            "曲　目：C．サン＝サーンス",
+            "歌劇「サムソンとデリラ」よりバッカナール",
+            "Ｌ．ドリーブ",
+            "バレエ音楽「コッペリア」より抜粋",
+            "H．ベルリオーズ",
+            "幻想交響曲"
+        ]
+        info = concertcrawler_file.scrape1Orchestra('中野区民交響楽団', lines, self.master)
+        self.assertEqual("2019/10/13", info.info['date'])
+        self.assertEqual("13:30", info.getKaijou())
+        self.assertEqual("14:00", info.info['kaien'])
+        self.assertEqual("なかのZERO", info.info['hall'])
+        self.assertEqual("ドリーブ", info.info['kyoku'][0]['composer'])
+        self.assertEqual("ベルリオーズ", info.info['kyoku'][1]['composer'])
 
 unittest.main()
