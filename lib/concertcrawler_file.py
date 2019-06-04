@@ -102,6 +102,7 @@ def scrape1Orchestra(orchestra, lines, master):
         date11 = re.search('（*([0-9]{4}) *年）* *([0-9]{1,2}) *月 *([0-9]{1,2}) *日', line)
         date12 = re.search('（*([０-９]{4}) *年）* *([０-９]{1,2}) *月 *([０-９]{1,2}) *日', line)
         date2 = re.search('平成([０-９0-9]*)年([０-９0-9]{1,2})月([０-９0-9]{1,2})日', line)
+        date22 = re.search('令和([０-９0-9]*)年([０-９0-9]{1,2})月([０-９0-9]{1,2})日', line)
         date31 = re.search('([0-9]{2})/([0-9]{1,2})/([0-9]{1,2})', line)
         date32 = re.search('([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})', line)
         date4 = re.search('([0-9]{4})\.([0-9]{1,2})\.([0-9]{1,2})', line)
@@ -122,6 +123,10 @@ def scrape1Orchestra(orchestra, lines, master):
             year = int(zenkakuToHankaku(date2.group(1))) + 1988
             month = int(zenkakuToHankaku(date2.group(2)))
             day = int(zenkakuToHankaku(date2.group(3)))
+        elif date22:
+            year = int(zenkakuToHankaku(date22.group(1))) + 2018
+            month = int(zenkakuToHankaku(date22.group(2)))
+            day = int(zenkakuToHankaku(date22.group(3)))
         elif date31:
             year = int(zenkakuToHankaku(date31.group(1))) + 2000
             month = int(zenkakuToHankaku(date31.group(2)))

@@ -322,4 +322,25 @@ class MyTest(unittest.TestCase):
         self.assertEqual("ドリーブ", info.info['kyoku'][0]['composer'])
         self.assertEqual("ベルリオーズ", info.info['kyoku'][1]['composer'])
 
+    def test_funabashiJunior201908(self):
+        lines = [
+			"船橋ジュニアオーケストラ",
+			"＊＊＊第39回定期演奏会のご案内＊＊＊",
+			"令和１年８月２４日（土）　14：00開演",
+			"指揮：武藤英明　　ホルン奏者：吉永雅人　　会場：船橋市民文化ホール",
+			"曲目　＊ナブッコ序曲　　　　　　　　　　　　ヴェルディ",
+			"＊ホルン協奏曲第１番　　　　　　　モーツァルト",
+			"＊バレエ組曲「白鳥の湖」より　　　チャイコフスキー",
+			"＊交響曲第４番　　　　　　　　　　　チャイコフスキー"
+        ]
+        info = concertcrawler_file.scrape1Orchestra('船橋ジュニアオーケストラ', lines, self.master)
+        self.assertEqual("2019/08/24", info.info['date'])
+        self.assertEqual("13:30", info.getKaijou())
+        self.assertEqual("14:00", info.info['kaien'])
+        self.assertEqual("船橋市民文化ホール", info.info['hall'])
+        self.assertEqual("ヴェルディ", info.info['kyoku'][0]['composer'])
+        self.assertEqual("モーツァルト", info.info['kyoku'][1]['composer'])
+        self.assertEqual("チャイコフスキー", info.info['kyoku'][2]['composer'])
+        self.assertEqual("チャイコフスキー", info.info['kyoku'][3]['composer'])
+
 unittest.main()
