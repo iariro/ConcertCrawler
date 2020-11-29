@@ -19,7 +19,7 @@ def getPastOrchestraFromDB(host):
 	group by player.id, Player.name, Player.siteurl, Player.siteencoding, Player.active
 	having max(Concert.date) < getdate() order by max(Concert.date)
 	'''
-	connect = pymssql.connect(host='%s:2144' % (host), user='sa', password='p@ssw0rd', database='concert')
+	connect = pymssql.connect(host='%s:2144' % (host), user='sa', password='p@ssw0rd', database='concert', charset='sjis')
 	df = pd.io.sql.read_sql(sql, connect)
 	connect.close()
 
