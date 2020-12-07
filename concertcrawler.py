@@ -1,11 +1,12 @@
+#!/usr/bin/python3
+
 import sys
-sys.path.append('lib')
 import os.path
 from xml.etree.ElementTree import tostring
 from xml.dom import minidom
-import concertcrawler_file
-import concertcrawler_db
-import concertcrawler_net
+import lib.concertcrawler_file as concertcrawler_file
+import lib.concertcrawler_db as concertcrawler_db
+import lib.concertcrawler_net as concertcrawler_net
 from ftplib import FTP
 
 if len(sys.argv) < 3:

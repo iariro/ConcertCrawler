@@ -8,7 +8,7 @@ import urllib.request as urllib2
 from xml.etree.ElementTree import ElementTree, Element, SubElement, Comment, tostring
 from xml.dom import minidom
 from bs4 import BeautifulSoup
-import concertcrawler_file
+import lib.concertcrawler_file as concertcrawler_file
 
 def getPastOrchestraFromSite():
 	urls = []
