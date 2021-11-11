@@ -8,6 +8,7 @@ import lib.concertcrawler_file as concertcrawler_file
 import lib.concertcrawler_db as concertcrawler_db
 import lib.concertcrawler_net as concertcrawler_net
 from ftplib import FTP
+import requests
 
 if len(sys.argv) < 3:
 	print('Usage: schemafilepath fileoutdirpath')
@@ -29,6 +30,13 @@ if crawl:
 	with open(os.path.join(fileoutdir, 'NewConcert.xml'), 'w', encoding='utf-8') as xml:
 		reparsed = minidom.parseString(tostring(root, 'utf-8'))
 		xml.write(reparsed.toprettyxml(indent="  "))
+
+    # notify to LINE
+    token = "nPQEoC190nfvydJRbQmY75SY00Ygvt0CxsaXWoLTUUH"
+    url = "https://notify-api.line.me/api/notify"
+    headers = {"Authorization": "Bearer " + token}
+    payload = {"message": "コンサート情報{}件を収集しました".format(len(root))}
+    requests.post(url, headers=headers, data=payload)
 
 if upload:
 	FTP.encoding = "utf-8"
