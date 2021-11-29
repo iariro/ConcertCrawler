@@ -33,6 +33,25 @@ def getPastOrchestraFromDB(host):
 			'lastdate': row['lastdate'].strftime('%Y/%m/%d')})
 	return urls
 
+def getPastOrchestraFromDB_HTTP(host):
+	url = 'http://{}:8080/kumagai/pastorchestralist'.format(host)
+	ua = 'concertcrawler'
+
+	req = urllib.request.Request(url, headers={'User-Agent': ua})
+	html = urllib.request.urlopen(req).read().decode("utf-8")
+
+	urls = []
+	for line in html.split('\n'):
+		csv = line.split(',')
+		if len(csv) == 5:
+			urls.append({
+				'title': csv[0],
+				'url': csv[1],
+				'siteencoding': csv[2],
+				'active': csv[3],
+				'lastdate': csv[4]})
+	return urls
+
 def getPastOrchestraFromSite():
 	urls = []
 	
