@@ -8,10 +8,11 @@ import lib.concertcrawler_file as concertcrawler_file
 import lib.concertcrawler_db as concertcrawler_db
 import lib.concertcrawler_net as concertcrawler_net
 from ftplib import FTP
+import ftplib
 import requests
 
 if len(sys.argv) < 3:
-    print('Usage: schemafilepath fileoutdirpath')
+    print('Usage: schemafilepath fileoutdirpath [-crawl=True|False] [-upload=True|False]')
     sys.exit(0)
 
 schemafilepath = sys.argv[1]
@@ -20,6 +21,12 @@ dbhost = sys.argv[3]
 
 crawl = True
 upload = True
+
+for arg in sys.argv:
+    if arg == '-crawl=False':
+        crawl = False
+    elif arg == '-upload=False':
+        upload = False
 
 if crawl:
     master = concertcrawler_file.loadConcertSchema(schemafilepath)
@@ -42,7 +49,14 @@ if upload:
     FTP.encoding = "utf-8"
     FTP.maxline = 16384
     ftp = FTP("www2.gol.com", "ip0601170243", passwd="Z#5uqBpt")
-    with open(os.path.join(fileoutdir, 'NewConcert.txt'), "rb") as f:
-        ftp.storlines("STOR /private/data/concert/NewConcert.txt", f)
-    with open(os.path.join(fileoutdir, 'NewConcert.xml'), "rb") as f:
-        ftp.storlines("STOR /private/data/concert/NewConcert.xml", f)
+    try:
+        with open(os.path.join(fileoutdir, 'NewConcert.xml'), "rb") as f:
+            ftp.storlines("STOR /private/data/concert/NewConcert.xml", f)
+    except ftplib.all_errors as e:
+        print(f.name, e)
+
+    try:
+        with open(os.path.join(fileoutdir, 'NewConcert.txt'), "rb") as f:
+            ftp.storlines("STOR /private/data/concert/NewConcert.txt", f)
+    except ftplib.all_errors as e:
+        print(f.name, e)
